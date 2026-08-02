@@ -1,0 +1,149 @@
+# 站点基础配置
+baseURL = "https://wunai-xc.github.io/hugo-blog/"
+defaultContentLanguage = "zh"
+title = "wunai's blog"
+theme = "PaperMod"
+enableRobotsTXT = true
+enableEmoji = true
+buildDrafts = false
+buildFuture = false
+pygmentsUseClasses = true
+
+# 分页与摘要
+paginate = 10
+summaryLength = 30
+
+[markup.goldmark.renderer]
+  unsafe = true
+
+[markup.highlight]
+  noClasses = false
+
+# ============ 主题通用参数 ============
+[params]
+  env = "production"
+  defaultTheme = "auto"
+  ShowReadingTime = true
+  ShowShareButtons = false
+  ShowPostNavLinks = true
+  ShowBreadCrumbs = true
+  ShowCodeCopyButtons = true
+  ShowWordCount = true
+  ShowToc = true
+  TocOpen = false
+  disableHLJS = true
+  hideMeta = false
+  hideSummary = false
+  useHugoToc = true
+
+  # 主页信息（默认 fallback，各语言下可覆盖）
+  [params.homeInfoParams]
+    Title = "Hi there 👋"
+    Content = "欢迎来到我的博客"
+
+  [params.assets]
+    favicon = "/favicon.ico"
+    disableHLJS = true
+
+  # 社交图标
+  [[params.socialIcons]]
+    name = "github"
+    url = "https://github.com/wunai-xc"
+
+  # 搜索
+  [params.fuseOpts]
+    isCaseSensitive = false
+    shouldSort = true
+    location = 0
+    distance = 1000
+    threshold = 0.4
+    minMatchCharLength = 0
+    keys = ["title", "permalink", "summary", "content"]
+
+# ============ 输出格式（启用搜索） ============
+[outputs]
+  home = ["HTML", "RSS", "JSON"]
+
+# ============ 多语言配置 ============
+[languages]
+  # 中文（默认）
+  [languages.zh]
+    languageName = "中文"
+    weight = 1
+    title = "wunai's blog"
+
+    [languages.zh.params]
+      [languages.zh.params.homeInfoParams]
+        Title = "Hi there 👋"
+        Content = "欢迎来到我的博客，这里记录我的技术笔记与生活思考。"
+
+    [[languages.zh.menu.main]]
+      identifier = "home"
+      name = "首页"
+      url = "/zh/"
+      weight = 10
+
+    [[languages.zh.menu.main]]
+      identifier = "posts"
+      name = "文章"
+      url = "/zh/posts/"
+      weight = 20
+
+    [[languages.zh.menu.main]]
+      identifier = "tags"
+      name = "标签"
+      url = "/zh/tags/"
+      weight = 30
+
+    [[languages.zh.menu.main]]
+      identifier = "search"
+      name = "搜索"
+      url = "/zh/search/"
+      weight = 40
+
+    [[languages.zh.menu.main]]
+      identifier = "archives"
+      name = "归档"
+      url = "/zh/archives/"
+      weight = 50
+
+  # 英文
+  [languages.en]
+    languageName = "English"
+    weight = 2
+    title = "wunai's blog"
+
+    [languages.en.params]
+      [languages.en.params.homeInfoParams]
+        Title = "Hi there 👋"
+        Content = "Welcome to my blog — notes on tech and life."
+
+    [[languages.en.menu.main]]
+      identifier = "home"
+      name = "Home"
+      url = "/en/"
+      weight = 10
+
+    [[languages.en.menu.main]]
+      identifier = "posts"
+      name = "Posts"
+      url = "/en/posts/"
+      weight = 20
+
+    [[languages.en.menu.main]]
+      identifier = "tags"
+      name = "Tags"
+      url = "/en/tags/"
+      weight = 30
+
+    [[languages.en.menu.main]]
+      identifier = "search"
+      name = "Search"
+      url = "/en/search/"
+      weight = 40
+
+    [[languages.en.menu.main]]
+      identifier = "archives"
+      name = "Archives"
+      url = "/en/archives/"
+      weight = 50
