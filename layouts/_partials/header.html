@@ -1,3 +1,16 @@
+{{- /* 立即应用字号缩放，避免页面闪烁（FOUC） */ -}}
+<script>
+(function () {
+  try {
+    var s = parseFloat(localStorage.getItem('font-scale'));
+    if (!isNaN(s)) {
+      s = Math.max(0.85, Math.min(1.30, s));
+      document.documentElement.style.fontSize = (s * 100) + '%';
+    }
+  } catch (e) {}
+})();
+</script>
+
 <header class="header">
     <nav class="header-nav">
         <div class="logo">
@@ -32,9 +45,25 @@
             </a>
             {{- end }}
 
-            {{- $lsenabled := (or (not site.Params.disableThemeToggle) (and (not site.Params.disableLangToggle) (hugo.IsMultilingual))) }}
+            {{- $lsenabled := (or (not site.Params.disableThemeToggle) (not site.Params.disableLangToggle) (hugo.IsMultilingual)) }}
             {{- if $lsenabled }}
             <div class="logo-switches">
+                {{- /* 字号控制按钮组（与主题切换按钮风格统一） */ -}}
+                <div class="font-size-switches" role="group" aria-label="字号控制">
+                    <button id="font-decrease" class="font-toggle" type="button"
+                        title="缩小字号 (Alt + -)" aria-label="缩小字号" accesskey="-">
+                        <span class="font-icon">A−</span>
+                    </button>
+                    <button id="font-reset" class="font-toggle font-reset" type="button"
+                        title="重置字号 (Alt + 0)" aria-label="重置字号" accesskey="0">
+                        <span class="font-icon">A</span>
+                    </button>
+                    <button id="font-increase" class="font-toggle" type="button"
+                        title="放大字号 (Alt + =)" aria-label="放大字号" accesskey="=">
+                        <span class="font-icon">A+</span>
+                    </button>
+                </div>
+
                 {{- if (not site.Params.disableThemeToggle) }}
                 <button id="theme-toggle" class="theme-toggle" accesskey="t" title="(Alt + T)" aria-label="Toggle theme">
                     <svg class="moon" xmlns="http://www.w3.org/2000/svg" width="17" height="17" viewBox="0 0 24 24"
@@ -57,15 +86,10 @@
                     </svg>
                 </button>
                 {{- end }}
-                
+
                 {{- if (not site.Params.disableLangToggle) }}
                     {{- $lang := .Lang}}
-                    {{- /* 优先使用当前页面的翻译，没有翻译时回退到首页翻译 */ -}}
-                    {{- $translations := .Translations }}
-                    {{- if not $translations }}
-                    {{- $translations = site.Home.Translations }}
-                    {{- end }}
-                    {{- with $translations }}
+                    {{- with site.Home.Translations }}
                     {{- $separator := or $label_text (not site.Params.disableThemeToggle)}}
                     {{- if $separator }}<span class="nav-sep">|</span>{{ end }}
                     <ul class="lang-menu">
@@ -94,8 +118,7 @@
             {{- range site.Menus.main }}
             {{- $menu_item_url := (cond (strings.HasSuffix .URL "/") .URL (printf "%s/" .URL) ) | absLangURL }}
             {{- $page_url:= $currentPage.Permalink | absLangURL }}
-            {{- /* 多语言兼容：用 URL 后缀判断 search，避免 site.GetPage 在多语言下歧义 */ -}}
-            {{- $is_search := strings.HasSuffix .URL "search/" }}
+            {{- $is_search := eq (site.GetPage .KeyName).Layout `search` }}
             <li>
                 <a href="{{ .URL | absLangURL }}" title="{{ .Title | default .Name }} {{- cond $is_search (" (Alt + /)" | safeHTMLAttr) ("" | safeHTMLAttr ) }}"
                 {{- cond $is_search (" accesskey=/" | safeHTMLAttr) ("" | safeHTMLAttr ) }}>
@@ -118,3 +141,124 @@
         </ul>
     </nav>
 </header>
+
+{{- /* 字号控制：CSS 样式 + JS 逻辑（全局生效，localStorage 持久化） */ -}}
+<style>
+  .font-size-switches {
+    display: inline-flex;
+    align-items: center;
+    gap: 1px;
+    margin-right: 6px;
+    padding: 2px;
+    border-radius: 6px;
+  }
+  .font-toggle {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 26px;
+    height: 26px;
+    padding: 0 5px;
+    border: none;
+    background: transparent;
+    color: var(--primary, #1f2937);
+    cursor: pointer;
+    border-radius: 4px;
+    font-family: inherit;
+    line-height: 1;
+    transition: background .15s, color .15s;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .font-toggle .font-icon {
+    font-size: 12px;
+    font-weight: 700;
+    line-height: 1;
+    letter-spacing: -0.02em;
+  }
+  .font-toggle#font-increase .font-icon { font-size: 13px; }
+  .font-toggle#font-reset .font-icon { font-size: 14px; opacity: .85; }
+  .font-toggle:hover {
+    background: var(--tertiary, rgba(0,0,0,.06));
+    color: var(--link, #3b82f6);
+  }
+  .font-toggle:active { transform: scale(.94); }
+  .font-toggle.flash {
+    animation: fontFlash .4s ease;
+  }
+  @keyframes fontFlash {
+    0%   { background: var(--link, #3b82f6); color: #fff; }
+    100% { background: transparent; color: var(--primary, #1f2937); }
+  }
+  /* 小屏适配：按钮稍小，间距收紧 */
+  @media screen and (max-width: 540px) {
+    .font-size-switches { margin-right: 2px; }
+    .font-toggle { min-width: 24px; height: 24px; padding: 0 4px; }
+    .font-toggle .font-icon { font-size: 11px; }
+  }
+</style>
+
+<script>
+(function () {
+  var STORAGE_KEY = 'font-scale';
+  var MIN = 0.85, MAX = 1.30, STEP = 0.05, DEFAULT = 1.00;
+  var html = document.documentElement;
+
+  function clamp(s) { return Math.max(MIN, Math.min(MAX, s)); }
+
+  function getScale() {
+    var s = parseFloat(localStorage.getItem(STORAGE_KEY));
+    return isNaN(s) ? DEFAULT : clamp(s);
+  }
+
+  function applyScale(s) {
+    html.style.fontSize = (s * 100).toFixed(2) + '%';
+  }
+
+  function setScale(s) {
+    s = clamp(s);
+    try { localStorage.setItem(STORAGE_KEY, String(s)); } catch (e) {}
+    applyScale(s);
+  }
+
+  function flash(btn) {
+    if (!btn) return;
+    btn.classList.remove('flash');
+    void btn.offsetWidth;  // 触发重绘，重启动画
+    btn.classList.add('flash');
+  }
+
+  // 防止 accesskey 在某些浏览器下引发意外跳转，统一用 JS 处理快捷键
+  function bind() {
+    var dec = document.getElementById('font-decrease');
+    var inc = document.getElementById('font-increase');
+    var rst = document.getElementById('font-reset');
+    if (!dec || !inc || !rst) return;
+
+    dec.addEventListener('click', function () { setScale(getScale() - STEP); flash(dec); });
+    inc.addEventListener('click', function () { setScale(getScale() + STEP); flash(inc); });
+    rst.addEventListener('click', function () { setScale(DEFAULT); flash(rst); });
+
+    // 快捷键：Alt + - / = / 0
+    document.addEventListener('keydown', function (e) {
+      if (!e.altKey || e.ctrlKey || e.metaKey) return;
+      var k = e.key;
+      if (k === '-' || k === '_') {
+        e.preventDefault();
+        setScale(getScale() - STEP); flash(dec);
+      } else if (k === '=' || k === '+') {
+        e.preventDefault();
+        setScale(getScale() + STEP); flash(inc);
+      } else if (k === '0') {
+        e.preventDefault();
+        setScale(DEFAULT); flash(rst);
+      }
+    });
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', bind);
+  } else {
+    bind();
+  }
+})();
+</script>
