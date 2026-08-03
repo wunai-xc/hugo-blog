@@ -1,0 +1,19 @@
+{{- /* 行内带色标记块：{{< mark yellow >}}重点内容{{< /mark >}} */ -}}
+{{- /* 支持的颜色名：red/orange/yellow/green/cyan/blue/purple/pink/gray，或直接传 hex */ -}}
+{{- $color := .Get 0 | default "yellow" -}}
+{{- $bg := "#fff3bf" -}}
+{{- $fg := "#1f2937" -}}
+{{- if eq $color "red" -}}{{- $bg = "#ffe3e3" -}}{{- $fg = "#c92a2a" -}}
+{{- else if eq $color "orange" -}}{{- $bg = "#ffe8cc" -}}{{- $fg = "#e8590c" -}}
+{{- else if eq $color "yellow" -}}{{- $bg = "#fff3bf" -}}{{- $fg = "#e67700" -}}
+{{- else if eq $color "green" -}}{{- $bg = "#d3f9d8" -}}{{- $fg = "#2b8a3e" -}}
+{{- else if eq $color "cyan" -}}{{- $bg = "#c5f6fa" -}}{{- $fg = "#0b7285" -}}
+{{- else if eq $color "blue" -}}{{- $bg = "#d0ebff" -}}{{- $fg = "#1864ab" -}}
+{{- else if eq $color "purple" -}}{{- $bg = "#e5dbff" -}}{{- $fg = "#5f3dc4" -}}
+{{- else if eq $color "pink" -}}{{- $bg = "#ffdeeb" -}}{{- $fg = "#a61e4d" -}}
+{{- else if eq $color "gray" -}}{{- $bg = "#e9ecef" -}}{{- $fg = "#495057" -}}
+{{- else if eq $color "grey" -}}{{- $bg = "#e9ecef" -}}{{- $fg = "#495057" -}}
+{{- else -}}
+{{- $bg = $color -}}{{- $fg = "#1f2937" -}}
+{{- end -}}
+<span class="mark-block" style="background: {{ $bg }}; color: {{ $fg }}; border-color: {{ $fg }};">{{ .Inner }}</span>

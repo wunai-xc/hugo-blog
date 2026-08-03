@@ -234,4 +234,60 @@ window.addEventListener('load', function () {
 })();
 </script>
 
+{{- /* 5. 文本增强后处理：[reference:N] → 上标引用标；==高亮== → <mark> */ -}}
+<script>
+window.addEventListener('load', function () {
+  var content = document.querySelector('.post-content');
+  if (!content) return;
+
+  // 遍历所有文本节点（避开 code/pre/katex 等代码区）
+  var SKIP_TAGS = ['CODE', 'PRE', 'SCRIPT', 'STYLE', 'KBD', 'VAR', 'SAMP', 'INPUT', 'TEXTAREA', 'SELECT'];
+  var refRe = /\[reference:([0-9]+)\]/g;
+  var hlRe = /==([^=\n]{1,200}?)==/g;
+
+  function walk(node) {
+    if (node.nodeType === Node.TEXT_NODE) {
+      var text = node.nodeValue;
+      if (!text) return;
+      var changed = false;
+
+      // 1. [reference:N] → <sup class="ref-mark">[N]</sup>
+      if (refRe.test(text)) {
+        refRe.lastIndex = 0;
+        text = text.replace(refRe, function (m, n) {
+          return '<sup class="ref-mark" title="引用 ' + n + '">[' + n + ']</sup>';
+        });
+        changed = true;
+      }
+
+      // 2. ==高亮== → <mark>
+      if (hlRe.test(text)) {
+        hlRe.lastIndex = 0;
+        text = text.replace(hlRe, function (m, inner) {
+          return '<mark>' + inner + '</mark>';
+        });
+        changed = true;
+      }
+
+      if (changed) {
+        var span = document.createElement('span');
+        span.innerHTML = text;
+        var parent = node.parentNode;
+        while (span.firstChild) parent.insertBefore(span.firstChild, node);
+        parent.removeChild(node);
+      }
+      return;
+    }
+    if (node.nodeType !== Node.ELEMENT_NODE) return;
+    if (SKIP_TAGS.indexOf(node.tagName) !== -1) return;
+    if (node.classList && (node.classList.contains('katex') || node.classList.contains('katex-display'))) return;
+    // 复制子节点列表避免 live 修改影响迭代
+    var children = Array.prototype.slice.call(node.childNodes);
+    children.forEach(walk);
+  }
+
+  walk(content);
+});
+</script>
+
 {{- end }}{{- /* .IsPage */ -}}

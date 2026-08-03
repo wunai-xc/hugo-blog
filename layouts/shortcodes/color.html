@@ -1,0 +1,6 @@
+{{- /* 行内彩色文字：{{< color "#e03131" >}}红色文字{{< /color >}} 或 {{< color red >}}...{{< /color >}} */ -}}
+{{- $color := .Get 0 | default "var(--content, #1f2937)" -}}
+{{- /* 常见颜色名简写支持 */ -}}
+{{- $map := dict "red" "#e03131" "orange" "#f08c00" "yellow" "#e67700" "green" "#2f9e44" "cyan" "#0c8599" "blue" "#1971c2" "purple" "#7048e8" "pink" "#d6336c" "gray" "#868e96" "grey" "#868e96" -}}
+{{- if hasKey $map $color -}}{{- $color = index $map $color -}}{{- end -}}
+<span class="text-colored" style="color: {{ $color }};">{{ .Inner }}</span>
