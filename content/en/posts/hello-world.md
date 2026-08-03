@@ -1,24 +1,42 @@
+
+---
+
+## 🇬🇧 英文版（English Version, date: 2026-08-02）
+
+```markdown
 ---
 title: "Hello, World"
 date: 2026-08-02
 draft: false
-tags: ["announcement", "Hugo"]
-categories: ["notes"]
-summary: "The first post on this blog — building it from scratch with Hugo."
+tags: ["Announcement", "Hugo", "Blog Setup"]
+categories: ["Essay"]
+summary: "This is the first post of my blog, introducing why I chose Hugo and what I plan to write about."
 ---
 
-Welcome to my blog! This is the first post, documenting how this blog was built from scratch with Hugo.
+Welcome to my blog! This is the very first post – I'd like to take this chance to explain what this site is about and how I built it.
 
 ## Why Hugo
 
-Hugo is a static site generator written in Go with several advantages:
+After trying out Astro and Hexo, I finally settled on Hugo. Here’s why:
 
-- **Blazing fast** — builds thousands of pages in milliseconds
-- **Zero-dependency deployment** — pure static output, hostable on GitHub Pages
-- **Native multilingual** — built-in bilingual (zh/en) switching
-- **Rich theme ecosystem** — PaperMod and more work out of the box
+- **Blazing fast** – generates thousands of pages in milliseconds
+- **Zero-dependency deployment** – outputs plain static files, ready to host on GitHub Pages
+- **Native multi-language support** – seamless bilingual switching
+- **Rich theme ecosystem** – themes like PaperMod work out of the box
+
+Of course, Astro and Hexo have their own strengths. Here’s a quick comparison:
+
+| Framework | Speed | Learning Curve | Theme Variety | My Take |
+|-----------|-------|----------------|---------------|---------|
+| Hugo      | ⚡⚡⚡  | Moderate       | Rich          | Most comfortable |
+| Astro     | ⚡⚡   | Higher         | Good          | A bit overwhelming |
+| Hexo      | ⚡    | Low            | Rich          | A bit tedious to maintain |
+
+After all the tinkering, Hugo fits me best 😋
 
 ## Code Example
+
+Since Hugo is written in Go, here’s a Go Hello World snippet:
 
 ```go
 package main
@@ -30,10 +48,32 @@ func main() {
 }
 ```
 
-## Next Steps
+About This Site
 
-1. Keep refining the site config
-2. Write more technical notes
-3. Deploy to GitHub Pages
+I used Trae to help with writing (AI is really a lifesaver 🤓).
 
-> Thanks for reading, feel free to reach out on GitHub.
+Topics I plan to cover:
+
+· Biology
+· Chemistry
+· Physics
+· Mathematics
+· Computer Science
+
+(I don’t fully understand many of them, especially math 😵, but the learning journey itself is fun.)
+
+Next Steps
+
+1. Continue refining site configuration (theme customization, comments, etc.)
+2. Write more blog posts (starting with cell biology and basic chemistry)
+3. Build a book library (to organize books I’ve read and my notes)
+
+Deployed on GitHub Pages
+
+Thanks for reading! Feel free to reach out～
+
+> GitHub: [wunai-xc](https://github.com/wunai-xc)
+> QQ: 3234319738 (primary) / 3948468177 (please mention your purpose when adding)
+> Email: 3234319738@qq.com
+
+```
