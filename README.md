@@ -1,2 +1,3 @@
 # hugo-blog
-use hugo
+use hugo 搭建
+链接：blog.wunai.top
