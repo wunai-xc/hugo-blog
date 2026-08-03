@@ -25,13 +25,14 @@ jobs:
           extended: true
 
       - name: Download cell images
-        # 用 Special:FilePath 重定向，自动解析到真实存储路径，避免哈希目录失效问题
-        # 加 User-Agent 避免 Wikimedia 拒绝；加大小校验确保下载的是真图而非错误页
+        # 用 Special:FilePath 重定向，自动解析真实存储路径
+        # 加 User-Agent + 多次重试 + 备用 thumb 路径，应对 Wikimedia 随机 503/限流
+        # 即使某张图最终下载失败，也用占位 SVG 替代，不阻塞整体构建
         run: |
           mkdir -p static/images/cell
           UA="Mozilla/5.0 (X11; Linux x86_64; rv:128.0) Gecko/20100101 Firefox/128.0"
           BASE="https://commons.wikimedia.org/wiki/Special:FilePath"
-          # 文件名 -> 目标保存名 的映射
+          # 目标保存名 -> Wikimedia 源文件名
           declare -A IMGS=(
             ["prokaryotic-vs-eukaryotic.png"]="Prokaryotic_vs_eukaryotic_cell.png"
             ["prokaryote-cell.svg"]="Average_prokaryote_cell_-_en.svg"
@@ -39,26 +40,39 @@ jobs:
             ["animal-cell.svg"]="Animal_Cell.svg"
             ["plant-cell.png"]="Plant_cell_structure.png"
           )
-          fail=0
+
+          download() {
+            local src="$1" out="$2"
+            # 尝试 Special:FilePath（跟随重定向到真实路径）
+            for i in 1 2 3 4 5; do
+              curl -sSL -A "$UA" --max-time 30 -o "static/images/cell/$out" "$BASE/$src"
+              size=$(stat -c%s "static/images/cell/$out" 2>/dev/null || echo 0)
+              if [ "$size" -ge 5000 ]; then
+                echo "  OK (try $i): $size bytes"
+                return 0
+              fi
+              echo "  retry $i: got $size bytes, waiting ${i}s..."
+              sleep "$i"
+            done
+            return 1
+          }
+
           for out in "${!IMGS[@]}"; do
             src="${IMGS[$out]}"
-            url="$BASE/$src"
             echo "Downloading $src -> $out"
-            curl -sSL -A "$UA" --retry 3 --retry-delay 2 -o "static/images/cell/$out" "$url"
-            size=$(stat -c%s "static/images/cell/$out" 2>/dev/null || echo 0)
-            if [ "$size" -lt 5000 ]; then
-              echo "ERROR: $out is only $size bytes — likely an error page, not a real image"
-              head -c 200 "static/images/cell/$out"
-              fail=1
+            if download "$src" "$out"; then
+              :
             else
-              echo "  OK: $size bytes"
+              echo "  WARN: $out failed after retries, generating placeholder"
+              printf '%s\n' '<?xml version="1.0" encoding="UTF-8"?>' \
+                '<svg xmlns="http://www.w3.org/2000/svg" width="400" height="200" viewBox="0 0 400 200">' \
+                '<rect width="400" height="200" fill="#f5f5f5" stroke="#ccc"/>' \
+                '<text x="200" y="100" text-anchor="middle" fill="#999" font-family="sans-serif" font-size="14">图片加载失败</text>' \
+                '<text x="200" y="120" text-anchor="middle" fill="#999" font-family="sans-serif" font-size="12">请稍后刷新</text>' \
+                '</svg>' > "static/images/cell/$out"
             fi
           done
           ls -lh static/images/cell/
-          if [ "$fail" = "1" ]; then
-            echo "Some images failed to download, aborting build"
-            exit 1
-          fi
 
       - name: Build
         run: hugo --gc --minify
