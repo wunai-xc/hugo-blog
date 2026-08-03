@@ -1,11 +1,19 @@
 {{- /* 立即应用字号缩放，避免页面闪烁（FOUC） */ -}}
+<style id="font-scale-style">
+  /* 占位：实际规则由下方脚本动态注入 */
+</style>
 <script>
 (function () {
   try {
     var s = parseFloat(localStorage.getItem('font-scale'));
-    if (!isNaN(s)) {
-      s = Math.max(0.85, Math.min(1.30, s));
-      document.documentElement.style.fontSize = (s * 100) + '%';
+    var DEFAULT = 1.00, MIN = 0.85, MAX = 1.30;
+    if (isNaN(s)) s = DEFAULT;
+    s = Math.max(MIN, Math.min(MAX, s));
+    var px = (18 * s).toFixed(2) + 'px';
+    // 注入 CSS 规则（比逐个 querySelectorAll 更早生效，且覆盖动态加载的内容）
+    var style = document.getElementById('font-scale-style');
+    if (style) {
+      style.textContent = '.post-content{font-size:' + px + '!important}';
     }
   } catch (e) {}
 })();
@@ -52,15 +60,15 @@
                 <div class="font-size-switches" role="group" aria-label="字号控制">
                     <button id="font-decrease" class="font-toggle" type="button"
                         title="缩小字号 (Alt + -)" aria-label="缩小字号" accesskey="-">
-                        <span class="font-icon">A−</span>
+                        <span class="font-icon">−</span>
                     </button>
                     <button id="font-reset" class="font-toggle font-reset" type="button"
                         title="重置字号 (Alt + 0)" aria-label="重置字号" accesskey="0">
-                        <span class="font-icon">A</span>
+                        <span class="font-icon" id="font-label">100%</span>
                     </button>
                     <button id="font-increase" class="font-toggle" type="button"
                         title="放大字号 (Alt + =)" aria-label="放大字号" accesskey="=">
-                        <span class="font-icon">A+</span>
+                        <span class="font-icon">+</span>
                     </button>
                 </div>
 
@@ -158,7 +166,7 @@
     justify-content: center;
     min-width: 26px;
     height: 26px;
-    padding: 0 5px;
+    padding: 0 6px;
     border: none;
     background: transparent;
     color: var(--primary, #1f2937);
@@ -170,13 +178,17 @@
     -webkit-tap-highlight-color: transparent;
   }
   .font-toggle .font-icon {
-    font-size: 12px;
+    font-size: 14px;
     font-weight: 700;
     line-height: 1;
-    letter-spacing: -0.02em;
   }
-  .font-toggle#font-increase .font-icon { font-size: 13px; }
-  .font-toggle#font-reset .font-icon { font-size: 14px; opacity: .85; }
+  /* 中间按钮显示百分比，稍宽，字号小一些 */
+  .font-toggle#font-reset .font-icon {
+    font-size: 11px;
+    min-width: 30px;
+    font-weight: 600;
+    font-variant-numeric: tabular-nums;
+  }
   .font-toggle:hover {
     background: var(--tertiary, rgba(0,0,0,.06));
     color: var(--link, #3b82f6);
@@ -192,8 +204,9 @@
   /* 小屏适配：按钮稍小，间距收紧 */
   @media screen and (max-width: 540px) {
     .font-size-switches { margin-right: 2px; }
-    .font-toggle { min-width: 24px; height: 24px; padding: 0 4px; }
-    .font-toggle .font-icon { font-size: 11px; }
+    .font-toggle { min-width: 22px; height: 24px; padding: 0 4px; }
+    .font-toggle .font-icon { font-size: 13px; }
+    .font-toggle#font-reset .font-icon { font-size: 10px; min-width: 26px; }
   }
 </style>
 
@@ -201,7 +214,9 @@
 (function () {
   var STORAGE_KEY = 'font-scale';
   var MIN = 0.85, MAX = 1.30, STEP = 0.05, DEFAULT = 1.00;
-  var html = document.documentElement;
+  // PaperMod 文章正文字号默认 18px（px 写死在主题里，调整 html font-size 无效）
+  // 这里直接调整 .post-content 的字号，scale=1 时为 18px
+  var BASE_PX = 18;
 
   function clamp(s) { return Math.max(MIN, Math.min(MAX, s)); }
 
@@ -210,8 +225,23 @@
     return isNaN(s) ? DEFAULT : clamp(s);
   }
 
+  // 调整文章正文字号 + 同步按钮显示
   function applyScale(s) {
-    html.style.fontSize = (s * 100).toFixed(2) + '%';
+    var px = (BASE_PX * s).toFixed(2) + 'px';
+    // 通过 style 标签注入（覆盖动态加载的内容，且 !important 保证优先级）
+    var style = document.getElementById('font-scale-style');
+    if (style) {
+      style.textContent = '.post-content{font-size:' + px + ' !important}';
+    } else {
+      // fallback：直接设置 inline style
+      document.querySelectorAll('.post-content').forEach(function (el) {
+        el.style.fontSize = px;
+      });
+    }
+    // 同步更新所有按钮标签（页面切换/动态加载时仍能显示正确值）
+    document.querySelectorAll('#font-label').forEach(function (el) {
+      el.textContent = Math.round(s * 100) + '%';
+    });
   }
 
   function setScale(s) {
@@ -227,7 +257,6 @@
     btn.classList.add('flash');
   }
 
-  // 防止 accesskey 在某些浏览器下引发意外跳转，统一用 JS 处理快捷键
   function bind() {
     var dec = document.getElementById('font-decrease');
     var inc = document.getElementById('font-increase');
@@ -253,6 +282,9 @@
         setScale(DEFAULT); flash(rst);
       }
     });
+
+    // 初始化：应用已保存的字号 + 显示当前值
+    applyScale(getScale());
   }
 
   if (document.readyState === 'loading') {
