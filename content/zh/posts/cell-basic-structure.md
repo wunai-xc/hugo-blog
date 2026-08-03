@@ -163,7 +163,7 @@ summary: "系统梳理细胞基本结构：原核与真核的进化分野、动�
 
 ### 4.1 结构总览
 
-![典型植物细胞结构](/images/cell/plant-cell.svg)
+![典型植物细胞结构](/images/cell/plant-cell.png)
 *图 5：典型植物细胞。三大区别于动物细胞的标志性结构：**细胞壁**、**中央大液泡**、**叶绿体**。*
 <small>图源：LadyofHats / Mariana Ruiz Villarreal，CC0，Wikimedia Commons</small>
 
