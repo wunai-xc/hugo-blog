@@ -47,7 +47,7 @@ func main() {
 2. 编写博客内容
 3. 创建图书库
 
-#已部署到 GitHub Pages
+# 已部署到 GitHub Pages
 
 > 感谢阅读，欢迎在 GitHub 上与我交流。
 > github: https://github.com/wunai-xc
