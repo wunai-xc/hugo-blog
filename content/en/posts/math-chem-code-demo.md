@@ -90,7 +90,7 @@ $$
 
 ### 2.3 Isotopes & Bonding
 
-Isotopes: carbon-14 $\ce{^{14}_{6}C}$, uranium-235 $\ce{^{235}_{92}U}$.
+Isotopes: carbon-14 $\ce{^{14}\_{6}C}$, uranium-235 $\ce{^{235}\_{92}U}$.
 
 Bond order: methane $\ce{CH4}$, ethylene $\ce{H2C=CH2}$, acetylene $\ce{HC#CH}$.
 
