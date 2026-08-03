@@ -1,5 +1,5 @@
 # 站点基础配置
-baseURL = "https://wunai-xc.github.io/hugo-blog/"
+baseURL = "https://hugo-blog-wunai.pages.dev/"
 defaultContentLanguage = "zh"
 title = "wunai's blog"
 theme = "PaperMod"
