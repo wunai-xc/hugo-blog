@@ -24,6 +24,42 @@ jobs:
           hugo-version: '0.164.0'
           extended: true
 
+      - name: Download cell images
+        # 用 Special:FilePath 重定向，自动解析到真实存储路径，避免哈希目录失效问题
+        # 加 User-Agent 避免 Wikimedia 拒绝；加大小校验确保下载的是真图而非错误页
+        run: |
+          mkdir -p static/images/cell
+          UA="Mozilla/5.0 (X11; Linux x86_64; rv:128.0) Gecko/20100101 Firefox/128.0"
+          BASE="https://commons.wikimedia.org/wiki/Special:FilePath"
+          # 文件名 -> 目标保存名 的映射
+          declare -A IMGS=(
+            ["prokaryotic-vs-eukaryotic.png"]="Prokaryotic_vs_eukaryotic_cell.png"
+            ["prokaryote-cell.svg"]="Average_prokaryote_cell_-_en.svg"
+            ["endosymbiosis.svg"]="Endosymbiotic_theory.svg"
+            ["animal-cell.svg"]="Animal_Cell.svg"
+            ["plant-cell.svg"]="Plant_cell_structure_svg_labels.svg"
+          )
+          fail=0
+          for out in "${!IMGS[@]}"; do
+            src="${IMGS[$out]}"
+            url="$BASE/$src"
+            echo "Downloading $src -> $out"
+            curl -sSL -A "$UA" --retry 3 --retry-delay 2 -o "static/images/cell/$out" "$url"
+            size=$(stat -c%s "static/images/cell/$out" 2>/dev/null || echo 0)
+            if [ "$size" -lt 5000 ]; then
+              echo "ERROR: $out is only $size bytes — likely an error page, not a real image"
+              head -c 200 "static/images/cell/$out"
+              fail=1
+            else
+              echo "  OK: $size bytes"
+            fi
+          done
+          ls -lh static/images/cell/
+          if [ "$fail" = "1" ]; then
+            echo "Some images failed to download, aborting build"
+            exit 1
+          fi
+
       - name: Build
         run: hugo --gc --minify
 

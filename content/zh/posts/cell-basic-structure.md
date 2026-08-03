@@ -27,9 +27,9 @@ summary: "系统梳理细胞基本结构：原核与真核的进化分野、动�
 
 ### 1.1 结构总览
 
-![典型原核（细菌）细胞结构（中文标注）](/images/cell/prokaryote-cell-zh.svg)
+![典型原核（细菌）细胞结构](/images/cell/prokaryote-cell.svg)
 *图 2：典型原核细胞（细菌）结构。注意无细胞核、无膜结构细胞器。*
-<small>图源：LadyofHats 原图 / Mariana Ruiz Villarreal，CC0 / 中文标注版，Wikimedia Commons</small>
+<small>图源：LadyofHats / Mariana Ruiz Villarreal，CC0，Wikimedia Commons</small>
 
 ### 1.2 各结构功能详解
 
@@ -163,9 +163,9 @@ summary: "系统梳理细胞基本结构：原核与真核的进化分野、动�
 
 ### 4.1 结构总览
 
-![典型植物细胞结构（中文标注）](/images/cell/plant-cell-zh.svg)
+![典型植物细胞结构](/images/cell/plant-cell.svg)
 *图 5：典型植物细胞。三大区别于动物细胞的标志性结构：**细胞壁**、**中央大液泡**、**叶绿体**。*
-<small>图源：LadyofHats（原图，CC0） + 中文翻译版，Wikimedia Commons</small>
+<small>图源：LadyofHats / Mariana Ruiz Villarreal，CC0，Wikimedia Commons</small>
 
 ### 4.2 动物细胞不具备的三大结构
 
