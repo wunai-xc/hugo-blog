@@ -27,9 +27,7 @@ Domagk 因这一发现获得 **1939 年诺贝尔生理学或医学奖**。
 
 磺胺类药物的核心结构是对氨基苯磺酰胺：
 
-$$
-\ce{H2N - C6H4 - SO2 - NH2}
-$$
+{{< chem smiles="NS(=O)(=O)c1ccc(N)cc1" caption="磺胺（对氨基苯磺酰胺）" >}}
 
 其抗菌机制是**竞争性拮抗**对氨基苯甲酸（PABA），阻断细菌叶酸合成。人体不需要自行合成叶酸（可直接从饮食摄取），因此磺胺类药物具有**选择性毒性**。
 
@@ -55,11 +53,9 @@ $$
 
 青霉素的核心是 **β-内酰胺环**（β-lactam ring）并合噻唑烷环：
 
-$$
-\ce{ \underset{\displaystyle\phantom{R}}{R} - \overset{\displaystyle *}{C}H - \underset{\displaystyle O}{C} - N - \underset{\displaystyle S}{\phantom{S}} \kern{-0.8em} \rule[0.2em]{0.5em}{0.1em} }
-$$
+{{< chem smiles="CC1(C)SC2C(NC(=O)Cc3ccccc3)C(=O)N2C1C(=O)O" caption="青霉素 G（Penicillin G）" >}}
 
-更准确地表示，青霉素的母核为 **6-氨基青霉烷酸（6-APA）**，其 β-内酰胺环通过共价键与细菌转肽酶活性位点丝氨酸结合，抑制细胞壁肽聚糖交联。
+其 β-内酰胺环通过共价键与细菌转肽酶活性位点丝氨酸结合，抑制细胞壁肽聚糖交联。
 
 ### 意义
 
@@ -99,9 +95,7 @@ Waksman 首创了"抗生素"（antibiotic）一词——定义为"由微生物�
 
 四环素类具有特征性的**四个线性稠合六元环**骨架：
 
-$$
-\ce{C22H24N2O8}
-$$
+{{< chem smiles="CC1(C2CC3C(C(=O)C(=C(N)O)C(=O)C3(C(=O)C2=C(C4=C1C=CC=C4O)O)O)N(C)C)O" caption="四环素（Tetracycline）" width="400" height="250" >}}
 
 其通过与细菌 **30S 核糖体亚基**结合，阻止氨基酰-tRNA 进入 A 位，抑制蛋白质合成。
 
@@ -121,9 +115,7 @@ $$
 
 ### 化学结构
 
-$$
-\ce{O2N - C6H4 - CH(OH) - CH(NH2) - CO - CHCl2}
-$$
+{{< chem smiles="O=C(N[C@@H](C(=O)O)[C@@H](O)c1ccc([N+](=O)[O-])cc1)C(Cl)Cl" caption="氯霉素（Chloramphenicol）" >}}
 
 氯霉素通过结合 **50S 核糖体亚基**，抑制肽基转移酶活性，阻断肽键形成。
 
@@ -144,7 +136,11 @@ $$
 
 ### 化学结构
 
-红霉素是**大环内酯类**（macrolides）抗生素的代表，其分子含有一个 **14 元内酯环**，环上连接两个脱氧糖。它与 **50S 核糖体亚基**结合，阻塞肽链出口通道，抑制蛋白质延伸。
+红霉素是**大环内酯类**（macrolides）抗生素的代表，其分子含有一个 **14 元内酯环**，环上连接两个脱氧糖。
+
+{{< chem smiles="CC1OC(=O)C(C(C2COC(=O)C(CC(C(C2O)C)OC3OC(C)C(C(C3O)OC)OC)C)C)C(C)C(=O)C(C(C)C)CC(=O)C1C" caption="红霉素 A（Erythromycin A）" width="400" height="250" >}}
+
+它与 **50S 核糖体亚基**结合，阻塞肽链出口通道，抑制蛋白质延伸。
 
 ### 意义
 
@@ -186,7 +182,11 @@ $$
 
 ### 化学结构
 
-头孢菌素同样含有 **β-内酰胺环**，但并合的是**二氢噻嗪环**（六元环），而非青霉素的噻唑烷环（五元环）。这使得头孢菌素对青霉素酶更具稳定性。
+头孢菌素同样含有 **β-内酰胺环**，但并合的是**二氢噻嗪环**（六元环），而非青霉素的噻唑烷环（五元环）。
+
+{{< chem smiles="CC1=C(C(=O)O)N2C(=O)[C@@H](C)C(=O)N(C2=C1)c1ccc(CN)cc1" caption="头孢氨苄（Cephalexin）" >}}
+
+这使得头孢菌素对青霉素酶更具稳定性。
 
 ### 分代
 
@@ -243,6 +243,8 @@ $$
 
 碳青霉烯类的 β-内酰胺环并合**五元吡咯环**（而非噻唑烷环），且环上碳原子被碳取代（无硫），使其具有极广的抗菌谱和极强的 β-内酰胺酶稳定性。
 
+{{< chem smiles="CC1=C2C(=O)N2C3C1C(=O)N(C3=O)Cc4ccn4C(=O)O" caption="亚胺培南（Imipenem，硫霉素衍生物）" >}}
+
 ### 意义
 
 - 被誉为"抗生素的终极武器"
@@ -264,9 +266,7 @@ $$
 
 喹诺酮抑制细菌 **DNA 促旋酶**（DNA gyrase, 革兰阴性菌）和 **拓扑异构酶 IV**（Topoisomerase IV, 革兰阳性菌），阻断 DNA 复制：
 
-$$
-\ce{DNA + 促旋酶 + ATP ->[喹诺酮阻断] \text{DNA 复制停滞} -> 细菌死亡}
-$$
+{{< chem smiles="O=C(O)c1cn(C2CC2)c3cc(F)c(N4CCNCC4)cc3c1=O" caption="环丙沙星（Ciprofloxacin）" >}}
 
 ### 分代
 

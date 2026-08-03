@@ -176,6 +176,24 @@
     overflow-y: hidden;
     padding: 8px 4px;
   }
+
+  /* === 化学结构式（SmilesDrawer） === */
+  .chem-structure {
+    text-align: center;
+    margin: 20px 0;
+    padding: 16px;
+    border: 1px solid var(--border, #e5e7eb);
+    border-radius: 10px;
+    background: var(--code-bg, rgba(0,0,0,.02));
+    overflow-x: auto;
+  }
+  .chem-structure svg { max-width: 100%; height: auto; }
+  .chem-caption {
+    margin: 8px 0 0;
+    font-size: 13px;
+    color: var(--secondary, #64748b);
+    font-style: italic;
+  }
 </style>
 
 {{- end }}{{- /* .IsPage */ -}}

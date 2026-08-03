@@ -64,7 +64,53 @@
     }
   });"></script>
 
-{{- /* 3. 三栏布局初始化 + TOC 滚动高亮 + 目录抽取 */ -}}
+{{- /* 3. SmilesDrawer：渲染 2D 化学结构式（环状结构等 mhchem 无法处理的） */ -}}
+<script defer src="https://cdn.jsdelivr.net/npm/smiles-drawer@2.4.1/dist/smiles-drawer.min.js"></script>
+<script>
+window.addEventListener('load', function () {
+  if (typeof SmilesDrawer === 'undefined') return;
+  var svgs = document.querySelectorAll('svg[data-smiles]');
+  if (!svgs.length) return;
+
+  // 检测当前主题
+  var isDark = document.documentElement.getAttribute('data-theme') === 'dark' ||
+               (document.documentElement.getAttribute('data-theme') === 'auto' &&
+                window.matchMedia('(prefers-color-scheme: dark)').matches);
+  var theme = isDark ? 'dark' : 'light';
+
+  var drawer = new SmilesDrawer.SvgDrawer({
+    width: 300,
+    height: 200,
+    bondThickness: 1,
+    atomVisualization: 'default',
+    themes: {
+      dark: {
+        C: '#e8e8e8',
+        O: '#ff6b6b',
+        N: '#5c9eff',
+        S: '#ffd43b',
+        Cl: '#51cf66',
+        F: '#51cf66',
+        P: '#ff922b',
+        background: '#1a1a2e'
+      }
+    }
+  });
+
+  svgs.forEach(function (svg) {
+    var smiles = svg.getAttribute('data-smiles');
+    if (!smiles) return;
+    SmilesDrawer.parse(smiles, function (tree) {
+      drawer.draw(tree, svg, theme);
+    }, function (err) {
+      console.warn('SmilesDrawer parse error:', err);
+      svg.parentElement.innerHTML = '<em style="color:#999">SMILES 解析失败: ' + smiles + '</em>';
+    });
+  });
+});
+</script>
+
+{{- /* 4. 三栏布局初始化 + TOC 滚动高亮 + 目录抽取 */ -}}
 <script>
 (function () {
   // 关键修复：PaperMod 的文章详情页 body 没有 class，此处检测是否为文章页并打标

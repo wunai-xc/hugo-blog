@@ -1,0 +1,12 @@
+{{- /* 化学结构式 shortcode：用 SmilesDrawer 渲染 2D 分子结构 */ -}}
+{{- /* 用法: {{< chem smiles="CC(=O)OC1=CC=CC=C1C(=O)O" caption="阿司匹林" >}} */ -}}
+{{- $smiles := .Get "smiles" -}}
+{{- $caption := .Get "caption" -}}
+{{- $width := .Get "width" | default "300" -}}
+{{- $height := .Get "height" | default "200" -}}
+<div class="chem-structure">
+  <svg data-smiles="{{ $smiles }}" width="{{ $width }}" height="{{ $height }}"></svg>
+  {{- with $caption }}
+  <p class="chem-caption">{{ . }}</p>
+  {{- end }}
+</div>
