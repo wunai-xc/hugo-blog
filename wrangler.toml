@@ -1,14 +1,6 @@
 # Cloudflare Pages 部署配置
-# 参考: https://developers.cloudflare.com/pages/configuration/wrangler/
+# 部署通过 GitHub Actions (.github/workflows/cloudflare-pages.yml) 完成
+# 此文件仅保留兼容性日期等基础配置，不设置 name 以避免与 Git 构建环境的 wrangler deploy 冲突
 
-# 项目名称（自定义）
-name = "hugo-blog-wunai"
-
-# 兼容性日期（Pages 专用：构建命令与产物目录
 pages_build_output_dir = "public"
-
-# 兼容性标记（保持默认，如需 Pages Functions 也可扩展）
 compatibility_date = "2025-01-01"
-
-# 发布前构建（如仅本地构建（Hugo，不走 Pages 构建）
-# 本地手动 /  CI 构建后，然后用 wrangler pages deploy public
