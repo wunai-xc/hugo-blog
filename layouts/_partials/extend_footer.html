@@ -76,9 +76,14 @@
   const main = document.querySelector('body.layout-page .main');
   if (!leftSidebar || !main) return;
 
-  // 屏幕足够宽时启用三栏布局
+  // 媒体查询：必须与 extend_head.html 中的 CSS 保持完全一致
+  // 增加 (hover: hover) 和 (pointer: fine) 防止手机桌面模式误触发
+  const LAYOUT_MEDIA = '(min-width: 1280px) and (hover: hover) and (pointer: fine)';
+  const mql = window.matchMedia(LAYOUT_MEDIA);
+
+  // 屏幕足够宽且为桌面设备时启用三栏布局
   const enableLayout = () => {
-    if (window.innerWidth >= 1280) {
+    if (mql.matches) {
       // 1. 把左栏插入 .main 的第一个子节点（正文外）
       if (!main.contains(leftSidebar)) {
         main.insertBefore(leftSidebar, main.firstChild);
@@ -106,7 +111,7 @@
         rightToc.style.display = 'block';
       }
     } else {
-      // 小屏：禁用三栏，恢复 PaperMod 默认单栏
+      // 小屏或触屏设备：禁用三栏，恢复 PaperMod 默认单栏
       leftSidebar.style.display = 'none';
       const rightToc = document.getElementById('right-toc');
       if (rightToc) rightToc.style.display = 'none';
@@ -166,11 +171,17 @@
     enableLayout();
     setTimeout(() => { setupScrollSpy(); }, 300);
   });
-  window.addEventListener('resize', enableLayout);
+  // 监听媒体查询变化（如旋转屏幕、窗口大小变化）
+  if (mql.addEventListener) {
+    mql.addEventListener('change', enableLayout);
+  } else {
+    // Safari < 14 fallback
+    window.addEventListener('resize', enableLayout);
+  }
 
   // 大屏时禁用内联 details.toc 的点击（CSS 已隐藏其内容）
   document.addEventListener('click', (e) => {
-    if (window.innerWidth < 1280) return;
+    if (!mql.matches) return;
     const t = e.target.closest('details.toc summary');
     if (t) e.preventDefault();
   });

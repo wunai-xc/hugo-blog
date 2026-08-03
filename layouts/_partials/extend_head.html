@@ -8,7 +8,8 @@
 {{- /* 2. 三栏布局（仅文章详情页 & 大屏显示） */ -}}
 <style>
   /* === 三栏布局：左栏(文章导航) + 中栏(正文) + 右栏(页内目录) === */
-  @media screen and (min-width: 1280px) {
+  /* 关键：增加 (hover: hover) 和 (pointer: fine) 防止触屏手机开启桌面模式时误触发 */
+  @media screen and (min-width: 1280px) and (hover: hover) and (pointer: fine) {
     body.layout-page .main {
       display: grid;
       grid-template-columns: 260px minmax(0, 1fr) 280px;
