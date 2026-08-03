@@ -1,0 +1,180 @@
+{{- /* 扩展尾部：左栏文章导航 + KaTeX 渲染 + 三栏布局脚本 */ -}}
+{{- if .IsPage }}
+
+{{- /* 1. 左栏：当前 Section 所有文章（Hugo 模板直接生成，无需 fetch） */ -}}
+{{- $curPermalink := .RelPermalink }}
+{{- $isEn := hasPrefix .RelPermalink "/en/" }}
+{{- $pageLang := cond $isEn "en" "zh" }}
+{{- $sidebarTitle := cond $isEn "All Posts" "全部文章" }}
+{{- $section := cond $isEn (site.GetPage "section" "en/posts") (site.GetPage "section" "zh/posts") }}
+<aside id="left-sidebar" style="display:none">
+  <h3 class="sidebar-title">{{ $sidebarTitle }}</h3>
+  <ul class="post-list">
+  {{- range $section.RegularPagesRecursive.ByDate.Reverse }}
+    {{- $isCurrent := eq .RelPermalink $curPermalink }}
+    <li class="post-item{{ if $isCurrent }} current{{ end }}">
+      <a href="{{ .RelPermalink }}" title="{{ .Title }}">{{ .Title }}</a>
+    </li>
+  {{- else }}
+    {{- /* fallback：没有 RegularPagesRecursive 时，遍历 section.Pages */ -}}
+    {{- range $section.Pages }}
+      {{- $isCurrent := eq .RelPermalink $curPermalink }}
+      {{- if eq .Kind "page" }}
+        <li class="post-item{{ if $isCurrent }} current{{ end }}">
+          <a href="{{ .RelPermalink }}" title="{{ .Title }}">{{ .Title }}</a>
+        </li>
+      {{- else if eq .Kind "section" }}
+        <li class="section-group">
+          <div class="section-group-title">{{ .Title }}</div>
+          <ul class="post-list">
+          {{- range .RegularPages.ByDate.Reverse }}
+            {{- $isCurrent := eq .RelPermalink $curPermalink }}
+            <li class="post-item{{ if $isCurrent }} current{{ end }}">
+              <a href="{{ .RelPermalink }}" title="{{ .Title }}">{{ .Title }}</a>
+            </li>
+          {{- end }}
+          </ul>
+        </li>
+      {{- end }}
+    {{- end }}
+  {{- end }}
+  </ul>
+</aside>
+
+{{- /* 2. KaTeX JS + mhchem extension + auto-render */ -}}
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"
+  integrity="sha384-7zkQWkzuo3B5mTepMUcHkMB5jZaolc2xDwL6VFqjFALcbeS9Ggm/Yr2r3Dy4lfFg" crossorigin="anonymous"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/mhchem.min.js"
+  crossorigin="anonymous"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js"
+  integrity="sha384-43gviWU0YVjaDtb/GhzOouOXtZMP/7XUzwPTstBeZFe/+rCMvRwr4yROQP43s0Xk" crossorigin="anonymous"
+  onload="renderMathInElement(document.body,{
+    delimiters:[
+      {left:'$$',right:'$$',display:true},
+      {left:'\\[',right:'\\]',display:true},
+      {left:'\\(',right:'\\)',display:false},
+      {left:'$',right:'$',display:false}
+    ],
+    throwOnError:false,
+    strict:false,
+    macros:{
+      '\\RR':'\\mathbb{R}',
+      '\\CC':'\\mathbb{C}',
+      '\\ZZ':'\\mathbb{Z}'
+    }
+  });"></script>
+
+{{- /* 3. 三栏布局初始化 + TOC 滚动高亮 + 目录抽取 */ -}}
+<script>
+(function () {
+  // 关键修复：PaperMod 的文章详情页 body 没有 class，此处检测是否为文章页并打标
+  const isPostSingle = !!document.querySelector('article.post-single');
+  if (!isPostSingle) return;
+  document.body.classList.add('layout-page');
+
+  const leftSidebar = document.getElementById('left-sidebar');
+  const main = document.querySelector('body.layout-page .main');
+  if (!leftSidebar || !main) return;
+
+  // 屏幕足够宽时启用三栏布局
+  const enableLayout = () => {
+    if (window.innerWidth >= 1280) {
+      // 1. 把左栏插入 .main 的第一个子节点（正文外）
+      if (!main.contains(leftSidebar)) {
+        main.insertBefore(leftSidebar, main.firstChild);
+      }
+      leftSidebar.style.display = 'block';
+
+      // 2. 抽取 PaperMod 的内联 TOC（结构：details.toc > .inner > nav#TableOfContents）放入右栏
+      let rightToc = document.getElementById('right-toc');
+      // 优先从 details.toc 的 .inner 里取（PaperMod 标准结构）
+      const inlineToc = document.querySelector('details.toc .inner nav#TableOfContents')
+                     || document.querySelector('.post-content nav#TableOfContents');
+      if (inlineToc) {
+        if (!rightToc) {
+          rightToc = document.createElement('aside');
+          rightToc.id = 'right-toc';
+          const tocTitle = {{ $isEn }} ? 'On this page' : '本页目录';
+          rightToc.innerHTML = '<h3 class="toc-title">' + tocTitle + '</h3>';
+        }
+        const existingToc = rightToc.querySelector('nav#TableOfContents');
+        if (!existingToc) {
+          rightToc.appendChild(inlineToc);
+          buildTocAnchors(rightToc);
+          main.appendChild(rightToc);
+        }
+        rightToc.style.display = 'block';
+      }
+    } else {
+      // 小屏：禁用三栏，恢复 PaperMod 默认单栏
+      leftSidebar.style.display = 'none';
+      const rightToc = document.getElementById('right-toc');
+      if (rightToc) rightToc.style.display = 'none';
+    }
+  };
+
+  // 为 TOC 链接建立 anchor -> li 的映射，支持滚动高亮
+  const tocAnchorMap = new Map();
+  function buildTocAnchors(rightToc) {
+    tocAnchorMap.clear();
+    rightToc.querySelectorAll('nav#TableOfContents a').forEach(a => {
+      const href = a.getAttribute('href') || '';
+      if (href.startsWith('#')) {
+        tocAnchorMap.set(decodeURIComponent(href.slice(1)), a.closest('li'));
+      }
+    });
+  }
+
+  // 滚动监听：高亮当前 TOC 条目
+  function setupScrollSpy() {
+    const headings = document.querySelectorAll('.post-content h1[id], .post-content h2[id], .post-content h3[id], .post-content h4[id]');
+    if (!headings.length) return;
+
+    const observer = new IntersectionObserver((entries) => {
+      let firstVisibleId = null;
+      entries.forEach(entry => {
+        if (entry.isIntersecting && entry.boundingClientRect.top < window.innerHeight * 0.4) {
+          if (!firstVisibleId || entry.boundingClientRect.top < document.getElementById(firstVisibleId)?.getBoundingClientRect().top) {
+            firstVisibleId = entry.target.id;
+          }
+        }
+      });
+      if (firstVisibleId) {
+        tocAnchorMap.forEach((li) => li.classList.remove('active'));
+        const li = tocAnchorMap.get(firstVisibleId);
+        if (li) {
+          li.classList.add('active');
+          const rightToc = document.getElementById('right-toc');
+          if (rightToc && rightToc.contains(li)) {
+            const rect = li.getBoundingClientRect();
+            const tocRect = rightToc.getBoundingClientRect();
+            if (rect.top < tocRect.top + 40 || rect.bottom > tocRect.bottom - 40) {
+              li.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+            }
+          }
+        }
+      }
+    }, {
+      rootMargin: '-80px 0px -60% 0px',
+      threshold: 0
+    });
+
+    headings.forEach(h => observer.observe(h));
+  }
+
+  window.addEventListener('load', () => {
+    enableLayout();
+    setTimeout(() => { setupScrollSpy(); }, 300);
+  });
+  window.addEventListener('resize', enableLayout);
+
+  // 大屏时禁用内联 details.toc 的点击（CSS 已隐藏其内容）
+  document.addEventListener('click', (e) => {
+    if (window.innerWidth < 1280) return;
+    const t = e.target.closest('details.toc summary');
+    if (t) e.preventDefault();
+  });
+})();
+</script>
+
+{{- end }}{{- /* .IsPage */ -}}
