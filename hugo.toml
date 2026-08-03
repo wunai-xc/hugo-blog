@@ -37,6 +37,7 @@ summaryLength = 30
   hideMeta = false
   hideSummary = false
   useHugoToc = true
+  comments = true
 
   # 主页信息（默认 fallback，各语言下可覆盖）
   [params.homeInfoParams]
