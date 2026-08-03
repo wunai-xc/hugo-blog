@@ -10,8 +10,10 @@ buildFuture = false
 pygmentsUseClasses = true
 
 # 分页与摘要
-paginate = 10
 summaryLength = 30
+
+[pagination]
+  pagerSize = 10
 
 [markup.goldmark.renderer]
   unsafe = true
