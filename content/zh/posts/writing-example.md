@@ -444,8 +444,8 @@ $$
 |------|------|---------|
 | `[reference:N]` | AI 工具自动带 | 从 NotebookLM 等 AI 复制内容时无需处理 |
 | `==高亮==` | 双等号 | 简单强调，无需 shortcode |
-| `{{< color 红 >}}` | shortcode | 需要精确控制文字颜色 |
-| `{{< mark 红 >}}` | shortcode | 需要带背景色的醒目标记 |
+| `{{</* color 红 */>}}` | shortcode | 需要精确控制文字颜色 |
+| `{{</* mark 红 */>}}` | shortcode | 需要带背景色的醒目标记 |
 
 ---
 
