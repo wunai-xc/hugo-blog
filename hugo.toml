@@ -1,6 +1,7 @@
 # 站点基础配置
 baseURL = "https://blog.wunai.top/"
 defaultContentLanguage = "zh"
+defaultContentLanguageInSubdir = true
 title = "wunai's blog"
 theme = "PaperMod"
 enableRobotsTXT = true
@@ -74,6 +75,7 @@ summaryLength = 30
     label = "中文"
     weight = 1
     title = "wunai's blog"
+    contentDir = "content/zh"
 
     [languages.zh.params]
       [languages.zh.params.homeInfoParams]
@@ -115,6 +117,7 @@ summaryLength = 30
     label = "English"
     weight = 2
     title = "wunai's blog"
+    contentDir = "content/en"
 
     [languages.en.params]
       [languages.en.params.homeInfoParams]

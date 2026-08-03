@@ -60,7 +60,12 @@
                 
                 {{- if (not site.Params.disableLangToggle) }}
                     {{- $lang := .Lang}}
-                    {{- with site.Home.Translations }}
+                    {{- /* 优先使用当前页面的翻译，没有翻译时回退到首页翻译 */ -}}
+                    {{- $translations := .Translations }}
+                    {{- if not $translations }}
+                    {{- $translations = site.Home.Translations }}
+                    {{- end }}
+                    {{- with $translations }}
                     {{- $separator := or $label_text (not site.Params.disableThemeToggle)}}
                     {{- if $separator }}<span class="nav-sep">|</span>{{ end }}
                     <ul class="lang-menu">
