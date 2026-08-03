@@ -72,8 +72,8 @@ Deployed on GitHub Pages
 
 Thanks for reading! Feel free to reach out～
 
-> GitHub: [wunai-xc](https://github.com/wunai-xc)
-> QQ: 3234319738 (primary) / 3948468177 (please mention your purpose when adding)
-> Email: 3234319738@qq.com
+- GitHub: [wunai-xc](https://github.com/wunai-xc)
+- QQ: 3234319738 (primary) / 3948468177 (please mention your purpose when adding)
+- Email: 3234319738@qq.com
 
 ```
