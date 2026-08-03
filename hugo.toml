@@ -1,5 +1,5 @@
 # 站点基础配置
-baseURL = "https://hugo-blog-wunai.pages.dev/"
+baseURL = "https://blog.wunai.top/"
 defaultContentLanguage = "zh"
 title = "wunai's blog"
 theme = "PaperMod"
