@@ -66,7 +66,7 @@ func main() {
 
 感谢阅读！欢迎交流指正～
 
-> GitHub: wunai-xc
+> GitHub: [wunai-xc](https://github.com/wunai-xc)
 > QQ: 3234319738（主）/ 3948468177（加好友请说明来意）
 > 邮箱: 3234319738@qq.com
 
