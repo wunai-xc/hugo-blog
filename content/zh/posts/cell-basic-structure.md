@@ -13,7 +13,7 @@ summary: "系统梳理细胞基本结构：原核与真核的进化分野、动�
 
 根据细胞结构的复杂度，现代生物学将所有细胞划分为两大类：**原核细胞**（Prokaryote）和**真核细胞**（Eukaryote）。
 
-![原核 vs 真核细胞对比](https://upload.wikimedia.org/wikipedia/commons/thumb/a/aa/Prokaryotic_vs_eukaryotic_cell.png/1024px-Prokaryotic_vs_eukaryotic_cell.png)
+![原核 vs 真核细胞对比](/images/cell/prokaryotic-vs-eukaryotic.png)
 *图 1：原核（左）与真核（右）细胞结构对比。两者共有：细胞膜、核糖体、DNA、细胞质。核心差异：细胞核与膜结构细胞器。*
 <small>图源：SadiesBurrow, CC BY-SA 4.0, Wikimedia Commons</small>
 
@@ -27,7 +27,7 @@ summary: "系统梳理细胞基本结构：原核与真核的进化分野、动�
 
 ### 1.1 结构总览
 
-![典型原核（细菌）细胞结构（中文标注）](https://upload.wikimedia.org/wikipedia/commons/5/51/Average_prokaryote_cell-_zh-cn.svg)
+![典型原核（细菌）细胞结构（中文标注）](/images/cell/prokaryote-cell-zh.svg)
 *图 2：典型原核细胞（细菌）结构。注意无细胞核、无膜结构细胞器。*
 <small>图源：LadyofHats 原图 / Mariana Ruiz Villarreal，CC0 / 中文标注版，Wikimedia Commons</small>
 
@@ -87,7 +87,7 @@ summary: "系统梳理细胞基本结构：原核与真核的进化分野、动�
 - 基因序列比对：线粒体近 α-变形菌门；叶绿体近蓝藻门
 - 罕见的**核质体（Nucleomorph）**：二次内共生遗迹（隐藻、绿蛛藻）
 
-![内共生假说示意：线粒体和叶绿体的演化来源](https://upload.wikimedia.org/wikipedia/commons/thumb/0/0e/Endosymbiosis.svg/1024px-Endosymbiosis.svg.png)
+![内共生假说示意：线粒体和叶绿体的演化来源](/images/cell/endosymbiosis.svg)
 *图 3：内共生学说示意。一次内共生产生线粒体（所有真核）与叶绿体（植物祖先）；二次内共生产生复杂质体（如褐藻、甲藻）。*
 <small>图源：Andrew Z. Colvin, CC BY-SA 4.0, Wikimedia Commons</small>
 
@@ -97,7 +97,7 @@ summary: "系统梳理细胞基本结构：原核与真核的进化分野、动�
 
 ### 3.1 结构总览
 
-![典型动物细胞结构](https://upload.wikimedia.org/wikipedia/commons/thumb/6/64/Animal_Cell.svg/1024px-Animal_Cell.svg.png)
+![典型动物细胞结构](/images/cell/animal-cell.svg)
 *图 4：典型动物细胞三维结构图。请对照下方文字逐一标号识别。*
 <small>图源：Kelvinsong，CC BY-SA 3.0，Wikimedia Commons</small>
 
@@ -163,7 +163,7 @@ summary: "系统梳理细胞基本结构：原核与真核的进化分野、动�
 
 ### 4.1 结构总览
 
-![典型植物细胞结构（中文标注）](https://upload.wikimedia.org/wikipedia/commons/thumb/e/e7/Plant_cell_structure_svg_zh-hans.svg/1024px-Plant_cell_structure_svg_zh-hans.svg.png)
+![典型植物细胞结构（中文标注）](/images/cell/plant-cell-zh.svg)
 *图 5：典型植物细胞。三大区别于动物细胞的标志性结构：**细胞壁**、**中央大液泡**、**叶绿体**。*
 <small>图源：LadyofHats（原图，CC0） + 中文翻译版，Wikimedia Commons</small>
 

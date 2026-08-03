@@ -24,6 +24,17 @@ jobs:
           hugo-version: '0.164.0'
           extended: true
 
+      - name: Download images
+        run: |
+          mkdir -p static/images/cell
+          base="https://upload.wikimedia.org/wikipedia/commons"
+          curl -sL -o static/images/cell/prokaryotic-vs-eukaryotic.png "$base/thumb/a/aa/Prokaryotic_vs_eukaryotic_cell.png/1024px-Prokaryotic_vs_eukaryotic_cell.png"
+          curl -sL -o static/images/cell/prokaryote-cell-zh.svg        "$base/5/51/Average_prokaryote_cell-_zh-cn.svg"
+          curl -sL -o static/images/cell/endosymbiosis.svg             "$base/0/0e/Endosymbiosis.svg"
+          curl -sL -o static/images/cell/animal-cell.svg               "$base/6/64/Animal_Cell.svg"
+          curl -sL -o static/images/cell/plant-cell-zh.svg             "$base/e/e7/Plant_cell_structure_svg_zh-hans.svg"
+          ls -lh static/images/cell/
+
       - name: Build
         run: hugo --gc --minify
 
