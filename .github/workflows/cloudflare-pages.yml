@@ -37,7 +37,7 @@ jobs:
             ["prokaryote-cell.svg"]="Average_prokaryote_cell_-_en.svg"
             ["endosymbiosis.svg"]="Endosymbiotic_theory.svg"
             ["animal-cell.svg"]="Animal_Cell.svg"
-            ["plant-cell.svg"]="Plant_cell_structure_svg_labels.svg"
+            ["plant-cell.svg"]="Plant_cell_structure_svg.svg"
           )
           fail=0
           for out in "${!IMGS[@]}"; do
