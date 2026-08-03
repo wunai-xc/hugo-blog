@@ -43,7 +43,7 @@ summaryLength = 30
   # 主页信息（默认 fallback，各语言下可覆盖）
   [params.homeInfoParams]
     Title = "Hi there 👋"
-    Content = "欢迎来到我的博客"
+    Content = "欢迎来到我的博客，这里是Wunai_xc芜萘"
 
   [params.assets]
     favicon = "/favicon.ico"
@@ -80,7 +80,7 @@ summaryLength = 30
     [languages.zh.params]
       [languages.zh.params.homeInfoParams]
         Title = "Hi there 👋"
-        Content = "欢迎来到我的博客，这里记录我的技术笔记与生活思考。"
+        Content = "欢迎来到我的博客，这里记录我的学习笔记与生活思考。"
 
     [[languages.zh.menu.main]]
       identifier = "home"
