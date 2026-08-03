@@ -1,6 +1,6 @@
 # Cloudflare Pages 部署配置
 # 部署通过 GitHub Actions (.github/workflows/cloudflare-pages.yml) 完成
-# 此文件仅保留兼容性日期等基础配置，不设置 name 以避免与 Git 构建环境的 wrangler deploy 冲突
 
+name = "hugo-blog-wunai"
 pages_build_output_dir = "public"
 compatibility_date = "2025-01-01"
