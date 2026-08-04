@@ -64,9 +64,17 @@ summaryLength = 30
     minMatchCharLength = 0
     keys = ["title", "permalink", "summary", "content"]
 
-# ============ 输出格式（启用搜索） ============
+# ============ 输出格式（启用搜索 + DCMC 搜索索引） ============
 [outputs]
   home = ["HTML", "RSS", "JSON"]
+  section = ["HTML", "RSS", "DCMCINDEX"]
+
+[outputFormats.DCMCINDEX]
+  mediaType = "application/json"
+  baseName = "index"
+  isPlainText = true
+  notAlternative = true
+  disableKinds = []
 
 # ============ 多语言配置 ============
 [languages]
@@ -112,6 +120,12 @@ summaryLength = 30
       url = "/zh/archives/"
       weight = 50
 
+    [[languages.zh.menu.main]]
+      identifier = "dcmc"
+      name = "DCMC"
+      url = "/zh/dcmc/"
+      weight = 60
+
   # 英文
   [languages.en]
     label = "English"
@@ -153,3 +167,9 @@ summaryLength = 30
       name = "Archives"
       url = "/en/archives/"
       weight = 50
+
+    [[languages.en.menu.main]]
+      identifier = "dcmc"
+      name = "DCMC"
+      url = "/en/dcmc/"
+      weight = 60

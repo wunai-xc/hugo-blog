@@ -1,0 +1,27 @@
+{{- /* DCMC section 搜索索引：对 dcmc section 输出扁平的页面数组（section + 子页面），用于 Ctrl+K 搜索
+       对非 dcmc section，输出空数组（该 output format 挂到了全局 section 上，无法限制仅 dcmc） */ -}}
+{{- $isDCMC := or (eq .Section "dcmc") (eq .Type "dcmc") (eq .Layout "dcmc") -}}
+[
+{{- if $isDCMC }}
+  {{- /* 收集所有 dcmc 页面（section 根、每个子 section _index.md、每个子 RegularPages） */ -}}
+  {{- $items := slice -}}
+  {{- /* 根 _index.md */ -}}
+  {{- $items = $items | append (dict "href" .Permalink "title" .Title "summary" (or .Description .Summary) "content" (.Plain | default "")) -}}
+  {{- /* 子 sections + 它们的 RegularPages */ -}}
+  {{- range .Sections.ByWeight -}}
+    {{- $items = $items | append (dict "href" .Permalink "title" .Title "summary" (or .Description .Summary) "content" (.Plain | default "")) -}}
+    {{- range .RegularPages.ByWeight -}}
+      {{- $items = $items | append (dict "href" .Permalink "title" .Title "summary" (or .Description .Summary) "content" (.Plain | default "")) -}}
+    {{- end -}}
+  {{- end -}}
+  {{- /* 根下直接放的 RegularPages（罕见） */ -}}
+  {{- range .RegularPages.ByWeight -}}
+    {{- $items = $items | append (dict "href" .Permalink "title" .Title "summary" (or .Description .Summary) "content" (.Plain | default "")) -}}
+  {{- end -}}
+  {{- $total := len $items -}}
+  {{- range $i, $it := $items -}}
+    {{- dict "title" .title "href" .href "summary" .summary "content" .content | jsonify (dict "indent" "  " "noHTMLEscape" true) | safeJS -}}
+    {{- if lt $i (sub $total 1) -}},{{- end }}
+  {{- end }}
+{{- end }}
+]

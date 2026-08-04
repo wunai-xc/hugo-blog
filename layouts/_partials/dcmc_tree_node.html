@@ -1,0 +1,45 @@
+{{- /* 递归目录树：partial 版本替代 define，因为 partial 可以递归 */ -}}
+{{- $node := .node -}}
+{{- $depth := .depth -}}
+{{- $cur := .cur -}}
+{{- $isActive := eq $node.Permalink $cur -}}
+{{- $isAncestor := false -}}
+{{- if hasPrefix $cur $node.Permalink -}}{{- $isAncestor = true -}}{{- end -}}
+{{- $defaultOpen := or $isActive $isAncestor (le $depth 0) -}}
+{{- $childSections := $node.Sections.ByWeight -}}
+{{- $childPages := $node.RegularPages.ByWeight -}}
+{{- $hasChildren := or (gt (len $childSections) 0) (gt (len $childPages) 0) -}}
+
+<div class="dcmc-nav-item dcmc-nav-node{{ if $isActive }} is-active{{ end }}{{ if $isAncestor }} is-ancestor{{ end }}"
+  data-depth="{{ $depth }}" style="--depth: {{ $depth }};">
+  <div class="dcmc-nav-row"{{ if $hasChildren }} data-has-children="1"{{ end }}>
+    {{- if $hasChildren }}
+    <button type="button" class="dcmc-nav-chevron{{ if $defaultOpen }} is-open{{ end }}"
+      aria-label="toggle" aria-expanded="{{ if $defaultOpen }}true{{ else }}false{{ end }}">
+      <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none"
+        stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <polyline points="9 18 15 12 9 6" />
+      </svg>
+    </button>
+    {{- else }}
+    <span class="dcmc-nav-chevron dcmc-chevron-placeholder" aria-hidden="true"></span>
+    {{- end }}
+    <a href="{{ $node.Permalink }}" class="dcmc-nav-link{{ if $isActive }} is-current{{ end }}">
+      {{- if eq $depth 0 }}
+        <strong>{{ $node.Title }}</strong>
+      {{- else }}
+        {{ $node.Title }}
+      {{- end }}
+    </a>
+  </div>
+  {{- if $hasChildren }}
+  <div class="dcmc-nav-children"{{ if not $defaultOpen }} hidden{{ end }}>
+    {{- range $childSections }}
+      {{- partial "dcmc_tree_node.html" (dict "node" . "depth" (add $depth 1) "cur" $cur) }}
+    {{- end }}
+    {{- range $childPages }}
+      {{- partial "dcmc_tree_leaf.html" (dict "page" . "depth" (add $depth 1) "cur" $cur) }}
+    {{- end }}
+  </div>
+  {{- end }}
+</div>
