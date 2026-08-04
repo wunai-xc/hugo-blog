@@ -1,10 +1,10 @@
 ---
-title: "DCMC · Deep Code Minecraft"
+title: "DCMC · DeepCoreMineCraft"
 layout: "dcmc"
-description: "DCMC (Deep Code Minecraft) — Explore the world of code and computation in a game-like way."
+description: "DCMC (DeepCoreMineCraft) — Explore the world of code and computation in a game-like way."
 ---
 
-Welcome to **DCMC (Deep Code Minecraft)**.
+Welcome to **DCMC (DeepCoreMineCraft)**.
 
 A documentation corner where we take apart the world of computers and code "block by block" — just like building things in Minecraft — from the simplest logic gates up to complete systems.
 
