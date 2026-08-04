@@ -498,6 +498,172 @@
     margin: 0 2px;
     border: 1px solid currentColor;
   }
+
+  /* ========== 打印样式优化（@media print） ========== */
+  /* 目标：让 window.print() / 另存 PDF 输出干净、密度合理的文档 */
+  @media print {
+    /* 1. 强制重置用户调节的字号 —— 覆盖 header.html 中 !important 的字号注入 */
+    .post-content {
+      font-size: 12pt !important;
+      line-height: 1.6 !important;
+      color: #000 !important;
+      background: #fff !important;
+    }
+
+    /* 2. 隐藏所有非正文元素：顶栏、菜单、侧栏、TOC、字号按钮、评论、页脚、按钮等 */
+    .header,
+    nav.header-nav,
+    .logo,
+    .logo-switches,
+    .font-size-switches,
+    .theme-toggle,
+    .lang-menu,
+    ul#menu,
+    .menu,
+    #left-sidebar,
+    #right-toc,
+    details.toc,
+    .toc,
+    .breadcrumbs,
+    .post-nav-links,
+    .post-tags,
+    .share-icons,
+    .comments,
+    #comments,
+    .post-footer,
+    footer.site-footer,
+    .footer,
+    .code-copy-btn,
+    .copy-code-button,
+    .scroll-top,
+    #toc-toggle,
+    .post-meta .edit-post,
+    .post-canonical {
+      display: none !important;
+    }
+
+    /* 3. 重置三栏布局为单栏，正文占满页面宽度 */
+    body.layout-page .main {
+      display: block !important;
+      grid-template-columns: none !important;
+      max-width: none !important;
+      padding: 0 !important;
+      margin: 0 !important;
+    }
+    body.layout-page .post {
+      grid-column: auto !important;
+      order: unset !important;
+      margin: 0 !important;
+      max-width: none !important;
+    }
+
+    /* 4. 页面基础设置：白底、去除阴影、合理页边距 */
+    html, body {
+      background: #fff !important;
+      color: #000 !important;
+      font-size: 12pt !important;
+    }
+    body {
+      margin: 1.5cm 2cm !important;
+      padding: 0 !important;
+    }
+
+    /* 5. 文章标题与元信息打印优化 */
+    .post-single {
+      box-shadow: none !important;
+      border: none !important;
+      max-width: none !important;
+    }
+    .post-header {
+      border-bottom: 2px solid #000 !important;
+      padding-bottom: 8px !important;
+      margin-bottom: 16px !important;
+    }
+    .post-title {
+      font-size: 22pt !important;
+      color: #000 !important;
+      margin: 0 0 8px !important;
+    }
+    .post-meta {
+      font-size: 10pt !important;
+      color: #444 !important;
+      margin: 0 !important;
+    }
+
+    /* 6. 代码块打印优化：避免背景色浪费墨水，保留语法高亮但去除阴影 */
+    .post-content .highlight {
+      box-shadow: none !important;
+      border: 1px solid #ccc !important;
+      break-inside: avoid;
+    }
+    .post-content .highlight pre {
+      font-size: 10pt !important;
+      white-space: pre-wrap !important;
+      word-wrap: break-word;
+    }
+
+    /* 7. 链接：打印时显示 URL（方便纸质阅读时查阅），正文链接保留颜色 */
+    .post-content a[href]::after {
+      content: " (" attr(href) ")";
+      font-size: 9pt;
+      color: #555;
+      word-wrap: break-word;
+    }
+    /* 但内部锚点链接（#开头）不打印 URL，参考文献的 ↩ 也不打印 */
+    .post-content a[href^="#"]::after,
+    .post-content .ref-mark a::after,
+    .post-content .post-references-back::after {
+      content: "" !important;
+    }
+    .post-content a {
+      color: #000 !important;
+      text-decoration: underline;
+    }
+
+    /* 8. 表格、图片避免跨页断裂 */
+    table, figure, img, .chem-structure {
+      break-inside: avoid;
+    }
+    .post-content h1, .post-content h2, .post-content h3 {
+      break-after: avoid;
+    }
+
+    /* 9. 参考文献章节打印优化 */
+    .post-references {
+      break-before: page;
+      page-break-before: always;
+    }
+
+    /* 10. 暗色主题在打印时强制回浅色 */
+    [data-theme="dark"] {
+      --content: #000 !important;
+      --primary: #000 !important;
+      --secondary: #444 !important;
+      --border: #ccc !important;
+      --code-bg: #f5f5f5 !important;
+      --entry: #fff !important;
+      --background: #fff !important;
+    }
+    [data-theme="dark"] .post-content,
+    [data-theme="dark"] .post-content * {
+      color: #000 !important;
+    }
+    [data-theme="dark"] .post-content .highlight {
+      background: #f5f5f5 !important;
+    }
+
+    /* 11. mark 高亮在打印时改为浅灰底，省墨 */
+    .post-content mark {
+      background: #f0f0f0 !important;
+      box-shadow: none !important;
+    }
+
+    /* 12. 分页控制：标题不孤立在页底 */
+    .post-content h2, .post-content h3 {
+      orphans: 3;
+      widows: 3;
+    }
+  }
 </style>
 
 {{- end }}{{- /* .IsPage */ -}}
