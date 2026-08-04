@@ -73,18 +73,10 @@
       <div class="dcmc-sidebar-heading">
         <span>{{ if eq $lang "zh" }}目录{{ else }}Contents{{ end }}</span>
       </div>
-      <nav class="dcmc-nav" role="navigation">
+        <nav class="dcmc-nav" role="navigation">
         {{- with $dcmcSection }}
-          {{- /* 根节点：dcmc/_index.md */ -}}
+          {{- /* 根节点 + 递归子节点（dcmc_tree_node.html 内部已递归展开所有 sections/pages，不需要外部再 range） */ -}}
           {{- partial "dcmc_tree_node.html" (dict "node" . "depth" 0 "cur" $curPermalink) }}
-          {{- /* 子 sections（章节） */ -}}
-          {{- range .Sections.ByWeight }}
-            {{- partial "dcmc_tree_node.html" (dict "node" . "depth" 1 "cur" $curPermalink) }}
-          {{- end }}
-          {{- /* 根节点下的单页（非 section 子）通常没有 */ -}}
-          {{- range .RegularPages.ByWeight }}
-            {{- partial "dcmc_tree_leaf.html" (dict "page" . "depth" 1 "cur" $curPermalink) }}
-          {{- end }}
         {{- end }}
       </nav>
     </div>
