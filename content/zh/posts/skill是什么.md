@@ -1,4 +1,3 @@
-````
 
 +++
 title = 'Skill是什么：从人类能力到AI Agent的原子化工具'
@@ -252,5 +251,3 @@ Skill是从人类能力模型迁移到AI Agent系统的一个关键概念。它�
 4. [Function Calling 与 Tool 与 Skill 的区别与联系 - 腾讯云](https://cloud.tencent.com)
 5. [Toolformer: Language Models Can Teach Themselves to Use Tools](https://arxiv.org/abs/2302.04761)
 6. [LangChain 文档 - Tools & Skills](https://python.langchain.com/docs/modules/agents/tools/)
-
-````
