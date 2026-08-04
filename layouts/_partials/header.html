@@ -9,7 +9,7 @@
     var DEFAULT = 1.00, MIN = 0.85, MAX = 1.30;
     if (isNaN(s)) s = DEFAULT;
     s = Math.max(MIN, Math.min(MAX, s));
-    var px = (18 * s).toFixed(2) + 'px';
+    var px = (14 * s).toFixed(2) + 'px';
     // 注入 CSS 规则（比逐个 querySelectorAll 更早生效，且覆盖动态加载的内容）
     var style = document.getElementById('font-scale-style');
     if (style) {
@@ -214,9 +214,9 @@
 (function () {
   var STORAGE_KEY = 'font-scale';
   var MIN = 0.85, MAX = 1.30, STEP = 0.05, DEFAULT = 1.00;
-  // PaperMod 文章正文字号默认 18px（px 写死在主题里，调整 html font-size 无效）
-  // 这里直接调整 .post-content 的字号，scale=1 时为 18px
-  var BASE_PX = 18;
+  // 全站默认正文字号已调整为 14px（见 extend_head.html）
+  // 字号调节按钮基于此基准值缩放
+  var BASE_PX = 14;
 
   function clamp(s) { return Math.max(MIN, Math.min(MAX, s)); }
 

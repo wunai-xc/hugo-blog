@@ -1,5 +1,13 @@
 {{- /* 扩展头部：KaTeX CSS + 三栏布局 CSS + 代码块美化 + PWA Service Worker */ -}}
 
+{{- /* ========== 全站默认字号调整：18px → 14px（所有页面生效） ========== */ -}}
+<style>
+  html { font-size: 14px; }
+  body { font-size: 14px; }
+  /* 覆盖 PaperMod reset.css 的 18px，并让基于 rem 的元素同步缩小 */
+  .post-content { font-size: 14px; }
+</style>
+
 {{- /* ========== 全站注入：PWA Manifest + Service Worker 注册（所有页面都生效） ========== */ -}}
 {{- if hugo.IsProduction }}
 <link rel="manifest" href="{{ "manifest.webmanifest" | absURL }}">
@@ -504,7 +512,7 @@
   @media print {
     /* 1. 强制重置用户调节的字号 —— 覆盖 header.html 中 !important 的字号注入 */
     .post-content {
-      font-size: 16px !important;
+      font-size: 14px !important;
       line-height: 1.6 !important;
       color: #000 !important;
       background: #fff !important;
@@ -561,7 +569,7 @@
     html, body {
       background: #fff !important;
       color: #000 !important;
-      font-size: 16px !important;
+      font-size: 14px !important;
     }
     body {
       margin: 1.5cm 2cm !important;
