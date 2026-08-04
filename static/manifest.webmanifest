@@ -1,0 +1,48 @@
+{
+  "name": "wunai's blog",
+  "short_name": "wunai",
+  "description": "学习笔记与生活思考：数学、物理、化学、医学、技术文章集合",
+  "lang": "zh-CN",
+  "dir": "auto",
+  "start_url": "/zh/",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait-primary",
+  "background_color": "#ffffff",
+  "theme_color": "#2e2e33",
+  "categories": ["education", "books", "productivity"],
+  "icons": [
+    {
+      "src": "/apple-touch-icon.png",
+      "sizes": "180x180",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/favicon-32x32.png",
+      "sizes": "32x32",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/favicon-16x16.png",
+      "sizes": "16x16",
+      "type": "image/png",
+      "purpose": "any"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "全部文章",
+      "short_name": "文章",
+      "url": "/zh/posts/",
+      "description": "浏览所有文章"
+    },
+    {
+      "name": "搜索",
+      "short_name": "搜索",
+      "url": "/zh/search/",
+      "description": "站内搜索文章"
+    }
+  ]
+}

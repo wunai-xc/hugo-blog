@@ -1,4 +1,54 @@
-{{- /* 扩展头部：KaTeX CSS + 三栏布局 CSS + 代码块美化 */ -}}
+{{- /* 扩展头部：KaTeX CSS + 三栏布局 CSS + 代码块美化 + PWA Service Worker */ -}}
+
+{{- /* ========== 全站注入：PWA Manifest + Service Worker 注册（所有页面都生效） ========== */ -}}
+{{- if hugo.IsProduction }}
+<link rel="manifest" href="{{ "manifest.webmanifest" | absURL }}">
+{{- end }}
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="wunai">
+<meta name="mobile-web-app-capable" content="yes">
+
+<script>
+  // Service Worker 注册（仅 HTTPS / localhost 环境下注册）
+  (function () {
+    if (!('serviceWorker' in navigator)) return;
+    var isSecure = location.protocol === 'https:' ||
+                   location.hostname === 'localhost' ||
+                   location.hostname === '127.0.0.1';
+    if (!isSecure) return;
+    window.addEventListener('load', function () {
+      navigator.serviceWorker
+        .register('{{ "sw.js" | absURL }}', { scope: '/' })
+        .then(function (reg) {
+          // 新版本可用时，跳过等待立即激活
+          if (reg.waiting) {
+            reg.waiting.postMessage({ type: 'SKIP_WAITING' });
+          }
+          reg.addEventListener('updatefound', function () {
+            var nw = reg.installing;
+            if (!nw) return;
+            nw.addEventListener('statechange', function () {
+              if (nw.state === 'installed' && navigator.serviceWorker.controller) {
+                nw.postMessage({ type: 'SKIP_WAITING' });
+              }
+            });
+          });
+        })
+        .catch(function () { /* 注册失败静默忽略 */ });
+
+      // 收到 SW 激活通知时刷新页面应用新版本
+      var refreshing = false;
+      navigator.serviceWorker.addEventListener('controllerchange', function () {
+        if (refreshing) return;
+        refreshing = true;
+        location.reload();
+      });
+    });
+  })();
+</script>
+
+{{- /* ========== 仅文章详情页注入的增强（KaTeX / 三栏布局 / 代码块美化） ========== */ -}}
 {{- if .IsPage }}
 
 {{- /* 1. KaTeX CSS（用于数学公式 + mhchem 化学符号） */ -}}
