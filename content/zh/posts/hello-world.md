@@ -2,6 +2,8 @@
 title: "你好，世界"
 date: 2026-08-02
 draft: false
+pinned: true
+pinnedDescription: "第一次来到本站？从这里开始 —— 介绍博客定位、搭建过程与近期新增的阅读增强功能。"
 tags: ["公告", "Hugo", "博客搭建"]
 categories: ["随笔"]
 summary: "这是博客的第一篇文章，介绍我为什么选择 Hugo 以及本站未来会写哪些内容。"

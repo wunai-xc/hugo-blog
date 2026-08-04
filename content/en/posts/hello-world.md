@@ -2,6 +2,8 @@
 title: "Hello, World"
 date: 2026-08-02
 draft: false
+pinned: true
+pinnedDescription: "First time here? Start here — what this blog is about, how it's built, and the recently added reading enhancements."
 tags: ["Announcement", "Hugo", "Blog Setup"]
 categories: ["Essay"]
 summary: "This is the first post of my blog, introducing why I chose Hugo and what I plan to write about."

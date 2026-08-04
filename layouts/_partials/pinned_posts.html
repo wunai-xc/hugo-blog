@@ -1,0 +1,33 @@
+{{/* 置顶文章卡片：在首页第 1 页渲染，提示新访客从这篇看起 */}}
+{{- $cxt := .cxt -}}
+{{- $label := "置顶" -}}
+{{- if eq $cxt.Lang "en" -}}{{- $label = "Pinned" -}}{{- end -}}
+
+{{- range $i, $page := .pages }}
+<article class="pinned-entry">
+  <span class="pinned-badge" aria-label="{{ $label }}">
+    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24"
+      fill="currentColor" stroke="none" aria-hidden="true">
+      <path d="M16 9V4l1-1V2H7v1l1 1v5l-2 2v2h5v7l1 1 1-1v-7h5v-2l-2-2z" />
+    </svg>
+    {{ $label }}
+  </span>
+
+  <header class="entry-header">
+    <h2 class="entry-hint-parent">{{- $page.Title }}</h2>
+  </header>
+
+  <div class="entry-content pinned-content">
+    <p>{{- with $page.Params.pinnedDescription }}{{ . }}{{- else }}{{ $page.Summary | plainify | htmlUnescape }}{{- end }}</p>
+  </div>
+
+  {{- if not ($page.Param "hideMeta") }}
+  <footer class="entry-footer pinned-footer">
+    {{- partial "post_meta.html" $page -}}
+    <span class="pinned-readmore">{{- if eq $cxt.Lang "en" }}Read more{{- else }}阅读全文{{- end }} →</span>
+  </footer>
+  {{- end }}
+
+  <a class="entry-link" aria-label="{{- if eq $cxt.Lang "en" }}pinned post{{- else }}置顶文章{{- end }}: {{ $page.Title | plainify }}" href="{{ $page.Permalink }}"></a>
+</article>
+{{- end -}}
