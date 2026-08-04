@@ -6,28 +6,22 @@ tags: ["教程", "KaTeX", "Hugo"]
 categories: ["笔记"]
 summary: "演示博客中数学公式（KaTeX）、化学符号（mhchem）、代码块高亮与复制以及参考文献引用功能的使用方法与效果。"
 
-[[references]]
-title = 'KaTeX 官方文档'
-url = 'https://katex.org/docs/api.html'
-author = 'KaTeX'
-year = 2024
-
-[[references]]
-title = 'mhchem 扩展使用说明'
-url = 'https://mhchem.github.io/MathJax-mhchem/'
-author = 'Martin Hensel'
-year = 2023
-
-[[references]]
-title = 'Hugo Markdown 渲染指南'
-url = 'https://gohugo.io/content-management/formats/'
-author = 'Hugo'
-year = 2024
-
-[[references]]
-title = 'Chroma 语法高亮主题列表'
-author = 'alecthomas'
-year = 2023
+references:
+  - title: 'KaTeX 官方文档'
+    url: 'https://katex.org/docs/api.html'
+    author: 'KaTeX'
+    year: 2024
+  - title: 'mhchem 扩展使用说明'
+    url: 'https://mhchem.github.io/MathJax-mhchem/'
+    author: 'Martin Hensel'
+    year: 2023
+  - title: 'Hugo Markdown 渲染指南'
+    url: 'https://gohugo.io/content-management/formats/'
+    author: 'Hugo'
+    year: 2024
+  - title: 'Chroma 语法高亮主题列表'
+    author: 'alecthomas'
+    year: 2023
 ---
 
 这篇文章全面演示博客新增的功能：**左侧文章快速导航**、**数学公式与化学符号渲染**、**代码块美化与一键复制**、**参考文献引用**[reference:0]。
