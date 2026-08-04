@@ -4,14 +4,37 @@ date: 2026-08-03
 draft: false
 tags: ["教程", "KaTeX", "Hugo"]
 categories: ["笔记"]
-summary: "演示博客中数学公式（KaTeX）、化学符号（mhchem）以及代码块高亮与复制功能的使用方法与效果。"
+summary: "演示博客中数学公式（KaTeX）、化学符号（mhchem）、代码块高亮与复制以及参考文献引用功能的使用方法与效果。"
+
+[[references]]
+title = 'KaTeX 官方文档'
+url = 'https://katex.org/docs/api.html'
+author = 'KaTeX'
+year = 2024
+
+[[references]]
+title = 'mhchem 扩展使用说明'
+url = 'https://mhchem.github.io/MathJax-mhchem/'
+author = 'Martin Hensel'
+year = 2023
+
+[[references]]
+title = 'Hugo Markdown 渲染指南'
+url = 'https://gohugo.io/content-management/formats/'
+author = 'Hugo'
+year = 2024
+
+[[references]]
+title = 'Chroma 语法高亮主题列表'
+author = 'alecthomas'
+year = 2023
 ---
 
-这篇文章全面演示博客新增的三大功能：**左侧文章快速导航**、**数学公式与化学符号渲染**、**代码块美化与一键复制**。
+这篇文章全面演示博客新增的功能：**左侧文章快速导航**、**数学公式与化学符号渲染**、**代码块美化与一键复制**、**参考文献引用**[reference:0]。
 
 ## 一、数学公式（KaTeX）
 
-KaTeX 支持行内与块级两种公式模式，语法与标准 LaTeX 一致。
+KaTeX 支持行内与块级两种公式模式，语法与标准 LaTeX 一致[reference:1]。
 
 ### 1.1 行内公式
 
@@ -56,7 +79,7 @@ $$
 
 ## 二、化学符号（mhchem）
 
-mhchem 扩展提供了 `\ce{}` 命令，用于优雅地渲染化学方程式与结构式。
+mhchem 扩展提供了 `\ce{}` 命令，用于优雅地渲染化学方程式与结构式[reference:2]。
 
 ### 2.1 化学式与反应式
 
@@ -104,7 +127,7 @@ $$
 
 ## 三、代码块（高亮 + 复制）
 
-所有代码块自动启用 Chroma 语法高亮，鼠标悬停右上角可看到**复制**按钮。
+所有代码块自动启用 Chroma 语法高亮[reference:3]，鼠标悬停右上角可看到**复制**按钮。
 
 ### 3.1 Python
 
@@ -240,4 +263,31 @@ done
 
 ### 5.5 总结
 
-到这里，所有功能点已演示完毕。如果效果符合预期，就可以把这些功能推送到线上啦 🎉
+到这里，主要功能点已演示完毕。下面再补充一节专门演示参考文献引用功能。
+
+---
+
+## 六、参考文献引用（`[reference:N]`）
+
+博客支持在正文中用 `[reference:N]` 语法标记引用，N 对应文末参考文献列表的序号（从 0 开始）。渲染后会变成一个可点击的蓝色上标，例如这句话末尾的引用标记[reference:0]。
+
+### 6.1 工作原理
+
+1. 在文章 front matter 中用 `[[references]]` 数组声明参考文献，每条支持四个字段：
+   - `title`：标题（必填）
+   - `url`：链接（可选，有则标题渲染为外链）
+   - `author`：作者或机构（可选）
+   - `year`：年份（可选）
+2. 正文任意位置写 `[reference:N]`，前端会把它替换为上标 `[N]`[reference:1]
+3. 点击上标 → 跳转到文末对应条目；条目右侧的 `↩` 可返回正文首次出现处
+4. 若 N 超出列表范围，上标会跳到「参考文献」章节标题，避免死链
+
+### 6.2 演示
+
+- 本文引用了 KaTeX 文档[reference:0]
+- mhchem 扩展的说明[reference:2]
+- Hugo 的 Markdown 渲染指南[reference:3]（注意：本条 N=3 在列表范围内，对应第 4 条）
+
+> 若文章 front matter 没有 `references` 字段，`[reference:N]` 仍会渲染为纯上标 `[N]`（无链接），保持向下兼容。
+
+如果效果符合预期，就可以把这些功能推送到线上啦 🎉
