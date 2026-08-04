@@ -509,14 +509,29 @@
 
   /* ========== 打印样式优化（@media print） ========== */
   /* 目标：让 window.print() / 另存 PDF 输出干净、密度合理的文档 */
+  /* A4 高密度排版：正文 8px，行间距 2px，页边距 0.8cm */
   @media print {
     /* 1. 强制重置用户调节的字号 —— 覆盖 header.html 中 !important 的字号注入 */
     .post-content {
-      font-size: 14px !important;
-      line-height: 1.6 !important;
+      font-size: 8px !important;
+      line-height: 1.25 !important;  /* 8px 字号 + 2px 行间距 ≈ 1.25 */
       color: #000 !important;
       background: #fff !important;
     }
+
+    /* 段落间距压到最小 */
+    .post-content p,
+    .post-content li {
+      margin: 2px 0 !important;
+    }
+
+    /* 标题按比例缩小（基于 8px 正文） */
+    .post-content h1 { font-size: 14px !important; margin: 6px 0 3px !important; }
+    .post-content h2 { font-size: 11px !important; margin: 5px 0 2px !important; }
+    .post-content h3 { font-size: 10px !important; margin: 4px 0 2px !important; }
+    .post-content h4,
+    .post-content h5,
+    .post-content h6 { font-size: 9px !important; margin: 3px 0 2px !important; }
 
     /* 2. 隐藏所有非正文元素：顶栏、菜单、侧栏、TOC、字号按钮、评论、页脚、按钮等 */
     .header,
@@ -565,14 +580,14 @@
       max-width: none !important;
     }
 
-    /* 4. 页面基础设置：白底、去除阴影、合理页边距 */
+    /* 4. 页面基础设置：白底、去除阴影、极小页边距 0.8cm 最大化打印面积 */
     html, body {
       background: #fff !important;
       color: #000 !important;
-      font-size: 14px !important;
+      font-size: 8px !important;
     }
     body {
-      margin: 1.5cm 2cm !important;
+      margin: 0.8cm !important;
       padding: 0 !important;
     }
 
@@ -583,37 +598,44 @@
       max-width: none !important;
     }
     .post-header {
-      border-bottom: 2px solid #000 !important;
-      padding-bottom: 8px !important;
-      margin-bottom: 16px !important;
+      border-bottom: 1px solid #000 !important;
+      padding-bottom: 3px !important;
+      margin-bottom: 5px !important;
     }
     .post-title {
-      font-size: 22pt !important;
+      font-size: 16px !important;
       color: #000 !important;
-      margin: 0 0 8px !important;
+      margin: 0 0 3px !important;
     }
     .post-meta {
-      font-size: 10pt !important;
+      font-size: 7px !important;
       color: #444 !important;
       margin: 0 !important;
     }
 
-    /* 6. 代码块打印优化：避免背景色浪费墨水，保留语法高亮但去除阴影 */
+    /* 6. 代码块打印优化：字号同步缩小，避免背景色浪费墨水 */
     .post-content .highlight {
       box-shadow: none !important;
       border: 1px solid #ccc !important;
+      margin: 3px 0 !important;
       break-inside: avoid;
     }
     .post-content .highlight pre {
-      font-size: 10pt !important;
+      font-size: 7px !important;
+      line-height: 1.2 !important;
+      padding: 3px 4px !important;
       white-space: pre-wrap !important;
       word-wrap: break-word;
     }
+    .post-content :not(pre) > code {
+      font-size: 7px !important;
+      padding: 0 2px !important;
+    }
 
-    /* 7. 链接：打印时显示 URL（方便纸质阅读时查阅），正文链接保留颜色 */
+    /* 7. 链接：打印时显示 URL（方便纸质阅读时查阅） */
     .post-content a[href]::after {
       content: " (" attr(href) ")";
-      font-size: 9pt;
+      font-size: 6px;
       color: #555;
       word-wrap: break-word;
     }
@@ -632,15 +654,19 @@
     table, figure, img, .chem-structure {
       break-inside: avoid;
     }
-    .post-content h1, .post-content h2, .post-content h3 {
-      break-after: avoid;
-    }
 
     /* 9. 参考文献章节打印优化 */
     .post-references {
       break-before: page;
       page-break-before: always;
     }
+    .post-references-item {
+      padding: 1px 3px !important;
+      margin: 1px 0 !important;
+    }
+    .post-references-body { font-size: 7px !important; }
+    .post-references-num { font-size: 7px !important; min-width: 20px !important; }
+    .post-references-meta { font-size: 6px !important; }
 
     /* 10. 暗色主题在打印时强制回浅色 */
     [data-theme="dark"] {
@@ -666,10 +692,20 @@
       box-shadow: none !important;
     }
 
-    /* 12. 分页控制：标题不孤立在页底 */
-    .post-content h2, .post-content h3 {
-      orphans: 3;
-      widows: 3;
+    /* 12. 表格字号同步缩小 */
+    .post-content table { font-size: 7px !important; }
+    .post-content th, .post-content td {
+      padding: 1px 3px !important;
+    }
+
+    /* 13. 引用块、列表间距压缩 */
+    .post-content blockquote {
+      margin: 3px 0 !important;
+      padding: 2px 6px !important;
+    }
+    .post-content ul, .post-content ol {
+      margin: 2px 0 !important;
+      padding-left: 16px !important;
     }
   }
 </style>
