@@ -356,11 +356,118 @@
     cursor: default;
     font-weight: 600;
     user-select: none;
-    transition: background .15s;
+    transition: background .15s, color .15s;
+    text-decoration: none;
   }
   .ref-mark:hover {
     background: var(--link-background, #3b82f6);
     color: #fff;
+  }
+  /* 可跳转的引用标记（有 references 时） */
+  a.ref-mark.ref-mark-link {
+    cursor: pointer;
+  }
+  /* 跳转目标高亮闪一下（让读者知道跳到哪了） */
+  .ref-mark-target-flash {
+    animation: refFlash 1.2s ease-out;
+  }
+  @keyframes refFlash {
+    0%   { background: var(--link-background, #3b82f6); color: #fff; }
+    100% { background: var(--link-background-2, rgba(59,130,246,.1)); color: var(--link-background, #3b82f6); }
+  }
+
+  /* === 文末「参考文献」章节 === */
+  .post-references {
+    margin: 48px 0 0;
+    padding: 24px 0 0;
+    border-top: 1px solid var(--border, #e5e7eb);
+    scroll-margin-top: calc(var(--height-header, 64px) + 16px);
+  }
+  .post-references-title {
+    margin: 0 0 16px;
+    font-size: 22px;
+    font-weight: 700;
+    color: var(--content, #0f172a);
+    letter-spacing: -.01em;
+  }
+  .post-references-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    counter-reset: none;
+  }
+  .post-references-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    padding: 8px 10px;
+    margin: 2px 0;
+    border-radius: 8px;
+    transition: background .15s;
+    scroll-margin-top: calc(var(--height-header, 64px) + 16px);
+    line-height: 1.6;
+  }
+  .post-references-item:hover {
+    background: var(--tertiary-bg, rgba(0,0,0,.03));
+  }
+  .post-references-item:target {
+    background: var(--link-background-2, rgba(59,130,246,.12));
+  }
+  .post-references-num {
+    flex: 0 0 auto;
+    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--link-background, #3b82f6);
+    min-width: 32px;
+    padding-top: 1px;
+  }
+  .post-references-body {
+    flex: 1 1 auto;
+    min-width: 0;
+    font-size: 14.5px;
+    color: var(--content, #1f2937);
+  }
+  .post-references-link {
+    color: var(--link-background, #3b82f6);
+    text-decoration: none;
+    font-weight: 500;
+    border-bottom: 1px dashed transparent;
+    transition: border-color .15s;
+    word-break: break-word;
+  }
+  .post-references-link:hover {
+    border-bottom-color: var(--link-background, #3b82f6);
+  }
+  .post-references-title-text {
+    font-weight: 500;
+  }
+  .post-references-meta {
+    color: var(--tertiary, #64748b);
+    font-size: 13px;
+    margin-left: 4px;
+  }
+  .post-references-back {
+    flex: 0 0 auto;
+    margin-left: 6px;
+    padding: 2px 8px;
+    color: var(--tertiary, #94a3b8);
+    text-decoration: none;
+    font-size: 14px;
+    line-height: 1;
+    border-radius: 4px;
+    transition: background .15s, color .15s;
+  }
+  .post-references-back:hover {
+    background: var(--tertiary-bg, rgba(0,0,0,.06));
+    color: var(--link-background, #3b82f6);
+  }
+  /* 暗色主题下微调 */
+  [data-theme="dark"] .post-references-item:hover {
+    background: var(--tertiary-bg, rgba(255,255,255,.04));
+  }
+  [data-theme="dark"] .post-references-back:hover {
+    background: var(--tertiary-bg, rgba(255,255,255,.06));
   }
 
   /* ==高亮文字== → <mark> */

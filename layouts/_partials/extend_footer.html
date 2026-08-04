@@ -234,16 +234,52 @@ window.addEventListener('load', function () {
 })();
 </script>
 
-{{- /* 5. 文本增强后处理：[reference:N] → 上标引用标；==高亮== → <mark> */ -}}
+{{- /* 5. 文本增强后处理：[reference:N] → 可跳转的上标引用；==高亮== → <mark>；文末自动生成参考文献列表 */ -}}
+{{- /* 把当前文章的 references front matter 注入为 JSON，供前端读取 */ -}}
+{{- $refs := .Params.references | default slice -}}
+<script id="post-references-data" type="application/json">{{- $refs | jsonify -}}</script>
 <script>
 window.addEventListener('load', function () {
   var content = document.querySelector('.post-content');
   if (!content) return;
 
+  // 读取参考文献数据
+  var refs = [];
+  try {
+    var dataEl = document.getElementById('post-references-data');
+    if (dataEl) refs = JSON.parse(dataEl.textContent || '[]') || [];
+  } catch (e) { refs = []; }
+  var hasRefs = Array.isArray(refs) && refs.length > 0;
+
+  // 记录每个引用编号在正文出现的次数（用于反向跳转的 id 生成）
+  var refOccurCount = {};
+
   // 遍历所有文本节点（避开 code/pre/katex 等代码区）
   var SKIP_TAGS = ['CODE', 'PRE', 'SCRIPT', 'STYLE', 'KBD', 'VAR', 'SAMP', 'INPUT', 'TEXTAREA', 'SELECT'];
   var refRe = /\[reference:([0-9]+)\]/g;
   var hlRe = /==([^=\n]{1,200}?)==/g;
+
+  function escapeHTML(s) {
+    return String(s).replace(/[&<>"']/g, function (c) {
+      return { '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;' }[c];
+    });
+  }
+
+  function buildRefMark(n) {
+    // 没有参考文献列表时，仍按旧逻辑渲染为纯上标（向下兼容）
+    if (!hasRefs) {
+      return '<sup class="ref-mark" title="引用 ' + n + '">[' + n + ']</sup>';
+    }
+    // 有列表时，渲染为可跳转上标
+    refOccurCount[n] = (refOccurCount[n] || 0) + 1;
+    var occur = refOccurCount[n];
+    // 第一次出现时给上标加 id（作为文末 ↩ 返回的目标）；后续出现不重复 id
+    var idAttr = occur === 1 ? ' id="refmark-' + n + '-back"' : '';
+    // 若 N 超出 references 列表范围，跳到「参考文献」章节标题而非具体条目
+    var target = (parseInt(n, 10) < refs.length) ? ('#ref-' + n) : '#post-references-section';
+    return '<a href="' + target + '"' + idAttr +
+      ' class="ref-mark ref-mark-link" title="跳转到参考文献 ' + n + '">[' + n + ']</a>';
+  }
 
   function walk(node) {
     if (node.nodeType === Node.TEXT_NODE) {
@@ -251,12 +287,10 @@ window.addEventListener('load', function () {
       if (!text) return;
       var changed = false;
 
-      // 1. [reference:N] → <sup class="ref-mark">[N]</sup>
+      // 1. [reference:N] → 上标引用
       if (refRe.test(text)) {
         refRe.lastIndex = 0;
-        text = text.replace(refRe, function (m, n) {
-          return '<sup class="ref-mark" title="引用 ' + n + '">[' + n + ']</sup>';
-        });
+        text = text.replace(refRe, function (m, n) { return buildRefMark(n); });
         changed = true;
       }
 
@@ -281,12 +315,107 @@ window.addEventListener('load', function () {
     if (node.nodeType !== Node.ELEMENT_NODE) return;
     if (SKIP_TAGS.indexOf(node.tagName) !== -1) return;
     if (node.classList && (node.classList.contains('katex') || node.classList.contains('katex-display'))) return;
+    if (node.tagName === 'A' && node.classList && node.classList.contains('ref-mark-link')) return; // 避免二次处理
     // 复制子节点列表避免 live 修改影响迭代
     var children = Array.prototype.slice.call(node.childNodes);
     children.forEach(walk);
   }
 
   walk(content);
+
+  // ===== 文末自动生成「参考文献」章节 =====
+  if (hasRefs) {
+    // 若作者已手写「## 参考文献」，则把列表插入到该标题之后；否则在 .post-content 末尾追加
+    var existingHeader = null;
+    var headers = content.querySelectorAll('h1, h2, h3');
+    for (var i = 0; i < headers.length; i++) {
+      var t = (headers[i].textContent || '').trim();
+      if (t === '参考文献' || t === 'References' || t === '参考资料') {
+        existingHeader = headers[i];
+        break;
+      }
+    }
+
+    var section = document.createElement('section');
+    section.className = 'post-references';
+    section.innerHTML = '';
+
+    var h = document.createElement('h2');
+    h.className = 'post-references-title';
+    h.id = 'post-references-section';
+    h.textContent = existingHeader ? existingHeader.textContent.trim() : '参考文献';
+    section.appendChild(h);
+
+    var ol = document.createElement('ol');
+    ol.className = 'post-references-list';
+    refs.forEach(function (r, idx) {
+      var li = document.createElement('li');
+      li.className = 'post-references-item';
+      li.id = 'ref-' + idx;
+
+      var num = document.createElement('span');
+      num.className = 'post-references-num';
+      num.textContent = '[' + idx + ']';
+      li.appendChild(num);
+
+      var body = document.createElement('span');
+      body.className = 'post-references-body';
+
+      // 标题（若有 url 则做成链接）
+      var title = (r && r.title) ? String(r.title) : ('参考 ' + idx);
+      if (r && r.url) {
+        var a = document.createElement('a');
+        a.className = 'post-references-link';
+        a.href = r.url;
+        a.target = '_blank';
+        a.rel = 'noopener noreferrer';
+        a.textContent = title;
+        body.appendChild(a);
+      } else {
+        var t = document.createElement('span');
+        t.className = 'post-references-title-text';
+        t.textContent = title;
+        body.appendChild(t);
+      }
+
+      // 作者 · 年份
+      var meta = [];
+      if (r && r.author) meta.push(String(r.author));
+      if (r && r.year)  meta.push(String(r.year));
+      if (meta.length) {
+        var m = document.createElement('span');
+        m.className = 'post-references-meta';
+        m.textContent = ' · ' + meta.join(', ');
+        body.appendChild(m);
+      }
+      li.appendChild(body);
+
+      // 反向跳转 ↩（回到正文第一次出现处）
+      if (refOccurCount[idx]) {
+        var back = document.createElement('a');
+        back.className = 'post-references-back';
+        back.href = '#refmark-' + idx + '-back';
+        back.title = '返回正文引用处';
+        back.setAttribute('aria-label', '返回正文引用处');
+        back.textContent = '↩';
+        li.appendChild(back);
+      }
+
+      ol.appendChild(li);
+    });
+    section.appendChild(ol);
+
+    if (existingHeader) {
+      // 插在已有标题之后，并隐藏原标题（用我们生成的统一标题代替）
+      existingHeader.insertAdjacentElement('afterend', section);
+      existingHeader.style.display = 'none';
+      // 同时把原标题后续兄弟节点中、属于"手写参考列表"的 ol/ul 也隐藏（简化处理：只处理紧邻的）
+      var next = existingHeader.nextElementSibling;
+      if (next && (next.tagName === 'OL' || next.tagName === 'UL')) next.style.display = 'none';
+    } else {
+      content.appendChild(section);
+    }
+  }
 });
 </script>
 
