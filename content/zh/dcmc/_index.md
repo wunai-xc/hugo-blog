@@ -10,7 +10,7 @@ description: "DCMC 文档专区"
 
 从左侧目录选择章节开始阅读，或使用 **Ctrl + K** 全站检索。
 
-以下是mojang官方网站的zh eula
+## 以下是mojang官方网站的zh eula
 > # Minecraft 最终用户许可协议 (“EULA”)
 > 
 > ## 概述
