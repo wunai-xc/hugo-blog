@@ -84,38 +84,52 @@ body.dcmc-body > footer.footer { display: none !important; }
 }
 .dcmc-brand {
   display: inline-flex;
-  align-items: center;
+  align-items: baseline;
   gap: 8px;
   padding-left: 4px;
   text-decoration: none;
   color: inherit;
 }
-.dcmc-brand-mark { font-size: 20px; line-height: 1; }
 .dcmc-brand-name {
   font-weight: 800;
-  font-size: 17px;
-  letter-spacing: .01em;
-  background: linear-gradient(135deg, var(--dcmc-accent), #8b5cf6);
-  -webkit-background-clip: text;
-  background-clip: text;
-  color: transparent;
+  font-size: 16px;
+  letter-spacing: .02em;
+  color: var(--dcmc-accent);
 }
 .dcmc-brand-sub {
-  font-size: 12px;
+  font-size: 11.5px;
   color: var(--tertiary, #64748b);
   font-weight: 500;
-  letter-spacing: .02em;
+  letter-spacing: .03em;
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
 }
 @media screen and (max-width: 720px) {
   .dcmc-brand-sub { display: none; }
   .dcmc-back-blog-label { display: none; }
 }
-/* 主题切换日月图标 */
+/* 主题切换日月（文字图标） */
 .dcmc-theme-toggle .dcmc-sun { display: none; }
 [data-theme="dark"] .dcmc-theme-toggle .dcmc-moon { display: none; }
 [data-theme="dark"] .dcmc-theme-toggle .dcmc-sun { display: inline; }
-/* 语言切换 */
-.dcmc-lang-label { font-weight: 700; font-size: 12px; }
+.dcmc-theme-toggle .dcmc-moon,
+.dcmc-theme-toggle .dcmc-sun {
+  font-size: 16px;
+  line-height: 1;
+  display: inline-block;
+}
+/* 语言切换（文字） */
+.dcmc-lang-label { font-weight: 700; font-size: 12.5px; }
+/* 文字图标通用 */
+.dcmc-text-icon {
+  font-size: 16px;
+  line-height: 1;
+}
+.dcmc-back-icon {
+  display: inline-block;
+  font-size: 15px;
+  line-height: 1;
+  font-weight: 700;
+}
 /* 键盘按钮样式 */
 .dcmc-kbd {
   display: inline-block;
@@ -135,10 +149,33 @@ body.dcmc-body > footer.footer { display: none !important; }
   background: var(--code-bg, rgba(255,255,255,.06));
 }
 .dcmc-kbd-sep { color: var(--tertiary, #94a3b8); font-size: 11px; margin: 0 2px; }
-.dcmc-search-btn .dcmc-kbd { margin-left: 2px; }
-@media screen and (max-width: 640px) {
-  .dcmc-search-btn .dcmc-kbd,
-  .dcmc-search-btn .dcmc-kbd-sep { display: none; }
+/* 搜索按钮（简化版）：默认显示文字标签 + 桌面端追加 Ctrl+K 提示、移动端只留「搜索」 */
+.dcmc-search-btn {
+  min-width: auto;
+}
+.dcmc-search-glyph {
+  font-size: 15px;
+  line-height: 1;
+  font-weight: 700;
+  transform: rotate(-45deg);
+  display: inline-block;
+}
+.dcmc-search-label {
+  font-weight: 500;
+}
+.dcmc-search-kbd {
+  display: inline-flex;
+  align-items: center;
+  gap: 0;
+}
+/* 断点：< 800px 隐藏 Ctrl+K 快捷键提示 */
+@media screen and (max-width: 799px) {
+  .dcmc-search-kbd { display: none; }
+}
+/* 断点：< 560px 隐藏搜索按钮的「搜索」文字，只保留放大镜图标 */
+@media screen and (max-width: 560px) {
+  .dcmc-search-label { display: none; }
+  .dcmc-search-btn { padding: 0 8px; }
 }
 
 /* ========== 两栏外壳 ========== */
@@ -396,6 +433,7 @@ a.dcmc-nav-link.is-current {
 }
 
 /* ========== 搜索弹层 ========== */
+.dcmc-search-modal[hidden] { display: none !important; }
 .dcmc-search-modal {
   position: fixed;
   inset: 0;
@@ -404,7 +442,7 @@ a.dcmc-nav-link.is-current {
   display: flex;
   align-items: flex-start;
   justify-content: center;
-  padding: 80px 16px 0;
+  padding: 64px 16px 0;
   backdrop-filter: blur(3px);
   animation: dcmc-fade .15s ease-out;
 }
@@ -439,7 +477,26 @@ a.dcmc-nav-link.is-current {
   padding: 4px 0;
 }
 .dcmc-search-input-wrap > input::placeholder { color: var(--tertiary, #94a3b8); }
-.dcmc-search-close { cursor: default; }
+.dcmc-search-close-hint { cursor: default; }
+.dcmc-search-close-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px; height: 28px;
+  padding: 0;
+  border: 1px solid var(--border, rgba(0,0,0,.08));
+  border-radius: 6px;
+  background: var(--code-bg, rgba(0,0,0,.04));
+  color: var(--secondary, #475569);
+  cursor: pointer;
+  font-size: 16px;
+  line-height: 1;
+  transition: background .15s, color .15s;
+}
+.dcmc-search-close-btn:hover { color: var(--content, #111); background: var(--tertiary-bg, rgba(0,0,0,.08)); }
+@media screen and (min-width: 720px) { .dcmc-search-close-btn { display: none; } }
+.dcmc-search-close-hint { display: none; }
+@media screen and (min-width: 720px) { .dcmc-search-close-hint { display: inline-block; } }
 .dcmc-search-results {
   list-style: none;
   margin: 0;
@@ -489,6 +546,12 @@ a.dcmc-nav-link.is-current {
   border-top: 1px solid var(--border, #e5e7eb);
   color: var(--tertiary, #64748b);
   background: var(--code-bg, rgba(0,0,0,.02));
+}
+.dcmc-search-footer-desktop { display: inline; }
+.dcmc-search-footer-mobile  { display: none; }
+@media screen and (max-width: 719px) {
+  .dcmc-search-footer-desktop { display: none; }
+  .dcmc-search-footer-mobile  { display: inline; }
 }
 </style>
 
@@ -695,13 +758,19 @@ a.dcmc-nav-link.is-current {
       debounce = setTimeout(onInput, 80);
     });
 
+    var closeBtn = document.getElementById('dcmc-search-close-btn');
+
     function open() {
       modal.hidden = false;
-      setTimeout(function () {
-        input.focus();
-        input.select();
-      }, 0);
-      // 若还没加载过，预加载
+      // 移动端不自动聚焦，避免键盘弹出遮挡内容
+      var isTouch = window.matchMedia('(pointer: coarse)').matches
+        || 'ontouchstart' in window;
+      if (!isTouch) {
+        setTimeout(function () {
+          input.focus && input.focus();
+          try { input.select && input.select(); } catch (e) {}
+        }, 0);
+      }
       loadPages();
     }
     function close() {
@@ -711,11 +780,18 @@ a.dcmc-nav-link.is-current {
       input.value = '';
       currentItems = [];
       selectedIdx = -1;
+      // 失焦，把键盘收回
+      try { input.blur && input.blur(); } catch (e) {}
     }
     modal.addEventListener('click', function (e) {
       if (e.target === modal) close();
     });
     openBtn && openBtn.addEventListener('click', open);
+    closeBtn && closeBtn.addEventListener('click', function (e) {
+      e.preventDefault();
+      e.stopPropagation();
+      close();
+    });
     document.addEventListener('keydown', function (e) {
       // Ctrl/Cmd + K
       if ((e.ctrlKey || e.metaKey) && (e.key === 'k' || e.key === 'K')) {
