@@ -836,5 +836,22 @@
   } else {
     init();
   }
+
+  // 关键修复：从文章页"后退"回到首页时，很多浏览器走 bfcache（往返缓存），
+  // 不会重新触发 DOMContentLoaded，因此必须监听 pageshow 事件来刷新红点
+  window.addEventListener('pageshow', function (e) {
+    refreshDots();
+    // 如果是文章详情页且从 bfcache 恢复，再次确保已标记缓存
+    if (document.querySelector('article.post-single')) {
+      markCached(location.pathname);
+    }
+  });
+
+  // 额外保险：tab 从后台切回前台时也刷一次（用户在新标签打开文章后回到旧标签）
+  document.addEventListener('visibilitychange', function () {
+    if (!document.hidden) {
+      refreshDots();
+    }
+  });
 })();
 </script>
