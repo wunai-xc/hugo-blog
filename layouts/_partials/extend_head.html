@@ -153,6 +153,49 @@
 </style>
 {{- end }}
 
+{{- /* ========== 全站：SW 缓存红点（未缓存文章的卡片/列表项右上角显示红色小圆点） ========== */ -}}
+<style>
+  /* 红点基础样式：8px 红色小圆点，无动画 */
+  .cache-dot {
+    display: none;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: #ef4444;
+    flex-shrink: 0;
+  }
+  /* JS 判定未缓存时添加 .cache-dot--show 类显示红点 */
+  .cache-dot.cache-dot--show { display: inline-block; }
+
+  /* 1. 首页普通文章卡片：红点在卡片右上角 */
+  article.post-entry { position: relative; }
+  article.post-entry > .cache-dot {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    z-index: 2;
+  }
+  /* first-entry（首页首篇大卡片）红点位置稍微调整 */
+  article.first-entry > .cache-dot {
+    top: 16px;
+    right: 16px;
+    width: 10px;
+    height: 10px;
+  }
+  /* 置顶卡片（.pinned-entry）不显示红点 —— 已有 pinned-badge 在右上角 */
+
+  /* 2. 文章详情页左栏导航：红点跟在标题文字后面 */
+  #left-sidebar .post-list .post-item a {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 6px;
+  }
+  #left-sidebar .post-list .post-item a .cache-dot {
+    margin-left: auto;
+  }
+</style>
+
 {{- /* ========== 仅文章详情页注入的增强（KaTeX / 三栏布局 / 代码块美化） ========== */ -}}
 {{- if .IsPage }}
 
@@ -711,3 +754,87 @@
 </style>
 
 {{- end }}{{- /* .IsPage */ -}}
+
+{{- /* ========== 全站：SW 缓存红点的 JS 逻辑（首页 + 文章详情页都要执行） ========== */ -}}
+<script>
+(function () {
+  var STORAGE_KEY = 'sw-cached-posts-v1';
+
+  // URL 规范化：去掉末尾 / 做统一比较（Hugo .RelPermalink 常以 / 结尾）
+  function canonicalUrl(url) {
+    if (!url) return '';
+    return url.replace(/\/+$/, '') || '/';
+  }
+
+  // 读取 localStorage，返回已缓存 URL 的 Set
+  function getCachedSet() {
+    var s = new Set();
+    try {
+      var raw = localStorage.getItem(STORAGE_KEY);
+      if (raw) {
+        var arr = JSON.parse(raw);
+        if (Array.isArray(arr)) {
+          for (var i = 0; i < arr.length; i++) s.add(canonicalUrl(arr[i]));
+        }
+      }
+    } catch (e) { /* localStorage 不可用，静默忽略 */ }
+    return s;
+  }
+
+  // 写入 localStorage
+  function saveCachedSet(set) {
+    try {
+      var arr = [];
+      set.forEach(function (v) { arr.push(v); });
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(arr));
+    } catch (e) { /* 静默忽略 */ }
+  }
+
+  // 扫描所有 .cache-dot，根据缓存状态显示/隐藏红点
+  function refreshDots() {
+    var dots = document.querySelectorAll('.cache-dot[data-url]');
+    if (!dots.length) return;
+    var cached = getCachedSet();
+    dots.forEach(function (dot) {
+      var url = canonicalUrl(dot.getAttribute('data-url'));
+      if (!url) return;
+      if (cached.has(url)) {
+        dot.classList.remove('cache-dot--show');
+      } else {
+        dot.classList.add('cache-dot--show');
+      }
+    });
+  }
+
+  // 标记某 URL 为已缓存（并刷新所有对应红点）
+  function markCached(url) {
+    var cu = canonicalUrl(url);
+    if (!cu) return;
+    var set = getCachedSet();
+    if (set.has(cu)) return; // 已缓存，跳过
+    set.add(cu);
+    saveCachedSet(set);
+    // 刷新对应 URL 的所有红点
+    document.querySelectorAll('.cache-dot[data-url]').forEach(function (dot) {
+      if (canonicalUrl(dot.getAttribute('data-url')) === cu) {
+        dot.classList.remove('cache-dot--show');
+      }
+    });
+  }
+
+  // DOM 就绪后初始化
+  function init() {
+    refreshDots();
+    // 如果当前页是文章详情页，把当前页面 URL 标记为已缓存（SW 已缓存或即将缓存）
+    if (document.querySelector('article.post-single')) {
+      markCached(location.pathname);
+    }
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', init);
+  } else {
+    init();
+  }
+})();
+</script>

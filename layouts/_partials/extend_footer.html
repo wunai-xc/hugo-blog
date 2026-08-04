@@ -13,7 +13,7 @@
   {{- range $section.RegularPagesRecursive.ByDate.Reverse }}
     {{- $isCurrent := eq .RelPermalink $curPermalink }}
     <li class="post-item{{ if $isCurrent }} current{{ end }}">
-      <a href="{{ .RelPermalink }}" title="{{ .Title }}">{{ .Title }}</a>
+      <a href="{{ .RelPermalink }}" title="{{ .Title }}">{{ .Title }}<span class="cache-dot" data-url="{{ .RelPermalink }}" aria-hidden="true"></span></a>
     </li>
   {{- else }}
     {{- /* fallback：没有 RegularPagesRecursive 时，遍历 section.Pages */ -}}
@@ -21,7 +21,7 @@
       {{- $isCurrent := eq .RelPermalink $curPermalink }}
       {{- if eq .Kind "page" }}
         <li class="post-item{{ if $isCurrent }} current{{ end }}">
-          <a href="{{ .RelPermalink }}" title="{{ .Title }}">{{ .Title }}</a>
+          <a href="{{ .RelPermalink }}" title="{{ .Title }}">{{ .Title }}<span class="cache-dot" data-url="{{ .RelPermalink }}" aria-hidden="true"></span></a>
         </li>
       {{- else if eq .Kind "section" }}
         <li class="section-group">
@@ -30,7 +30,7 @@
           {{- range .RegularPages.ByDate.Reverse }}
             {{- $isCurrent := eq .RelPermalink $curPermalink }}
             <li class="post-item{{ if $isCurrent }} current{{ end }}">
-              <a href="{{ .RelPermalink }}" title="{{ .Title }}">{{ .Title }}</a>
+              <a href="{{ .RelPermalink }}" title="{{ .Title }}">{{ .Title }}<span class="cache-dot" data-url="{{ .RelPermalink }}" aria-hidden="true"></span></a>
             </li>
           {{- end }}
           </ul>

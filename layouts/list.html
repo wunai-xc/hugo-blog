@@ -76,6 +76,8 @@
 {{- end }}
 
 <article class="{{ $class }}">
+  {{- /* 缓存红点：文章未被 SW 缓存时 JS 显示（置顶卡片已被抽离此处，不会出现红点） */ -}}
+  <span class="cache-dot" data-url="{{ .RelPermalink }}" aria-hidden="true"></span>
   {{- $isHidden := (.Param "cover.hiddenInList") | default (.Param "cover.hidden") | default false }}
   {{- partial "cover.html" (dict "cxt" . "IsSingle" false "isHidden" $isHidden) }}
   <header class="entry-header">
