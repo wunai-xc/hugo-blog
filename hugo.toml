@@ -20,7 +20,11 @@ summaryLength = 30
   unsafe = true
 
 [markup.goldmark.extensions]
-  math = true
+  [markup.goldmark.extensions.passthrough]
+    enable = true
+    [markup.goldmark.extensions.passthrough.delimiters]
+      block = [["$$", "$$"], ["\\[", "\\]"]]
+      inline = [["$", "$"], ["\\(", "\\)"]]
 
 [markup.highlight]
   noClasses = false

@@ -41,36 +41,14 @@
   </ul>
 </aside>
 
-{{- /* 2. KaTeX JS + mhchem extension + auto-render */ -}}
-{{- /* 注意：Hugo goldmark-math 已将 $...$ 转为 <span class="math inline">、$$...$$ 转为 <div class="math display">
-   KaTeX auto-render 同时处理两种来源：
-   1. Hugo 生成的 .math.inline / .math.display 元素
-   2. 直接文本中的 $...$ / $$...$$ （fallback，兼容历史内容）
-   使用 ignoreClass 和 processEscapes 确保不重复处理 */ -}}
+{{- /* 2. KaTeX JS + mhchem extension + 自定义渲染器 */ -}}
+{{- /* math-render.js 直接扫描 DOM 中的 $...$ / $$...$$ / \[...\] / \(...\) 模式，
+   用 KaTeX 渲染，不依赖 auto-render 的 delimiter 检测（已知有 bug） */ -}}
 <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"
   integrity="sha384-7zkQWkzuo3B5mTepMUcHkMB5jZaolc2xDwL6VFqjFALcbeS9Ggm/Yr2r3Dy4lfFg" crossorigin="anonymous"></script>
 <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/mhchem.min.js"
   crossorigin="anonymous"></script>
-<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js"
-  integrity="sha384-43gviWU0YVjaDtb/GhzOouOXtZMP/7XUzwPTstBeZFe/+rCMvRwr4yROQP43s0Xk" crossorigin="anonymous"
-  onload="renderMathInElement(document.body,{
-    delimiters:[
-      {left:'$$',right:'$$',display:true},
-      {left:'\\[',right:'\\]',display:true},
-      {left:'\\(',right:'\\)',display:false},
-      {left:'$',right:'$',display:false}
-    ],
-    throwOnError:false,
-    strict:false,
-    processEscapes:true,
-    processEnvironments:true,
-    ignoreClass:'no-render|norender',
-    macros:{
-      '\\RR':'\\mathbb{R}',
-      '\\CC':'\\mathbb{C}',
-      '\\ZZ':'\\mathbb{Z}'
-    }
-  });"></script>
+<script defer src="/js/math-render.js"></script>
 
 {{- /* 3. SmilesDrawer：渲染 2D 化学结构式（环状结构等 mhchem 无法处理的） */ -}}
 <script defer src="https://cdn.jsdelivr.net/npm/smiles-drawer@2.4.1/dist/smiles-drawer.min.js"></script>
