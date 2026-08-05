@@ -64,17 +64,10 @@ summaryLength = 30
     minMatchCharLength = 0
     keys = ["title", "permalink", "summary", "content"]
 
-# ============ 输出格式（启用搜索 + DCMC 搜索索引） ============
+# ============ 输出格式（启用搜索） ============
 [outputs]
   home = ["HTML", "RSS", "JSON"]
-  section = ["HTML", "RSS", "DCMCINDEX"]
-
-[outputFormats.DCMCINDEX]
-  mediaType = "application/json"
-  baseName = "index"
-  isPlainText = true
-  notAlternative = true
-  disableKinds = []
+  section = ["HTML", "RSS"]
 
 # ============ 多语言配置 ============
 [languages]
@@ -122,9 +115,11 @@ summaryLength = 30
 
     [[languages.zh.menu.main]]
       identifier = "dcmc"
-      name = "DCMC"
-      url = "/zh/dcmc/"
+      name = "DMCC"
+      url = "https://dmcc.wunai.top/"
       weight = 60
+      [languages.zh.menu.main.params]
+        external = true
 
   # 英文
   [languages.en]
@@ -170,6 +165,8 @@ summaryLength = 30
 
     [[languages.en.menu.main]]
       identifier = "dcmc"
-      name = "DCMC"
-      url = "/en/dcmc/"
+      name = "DMCC"
+      url = "https://dmcc.wunai.top/"
       weight = 60
+      [languages.en.menu.main.params]
+        external = true
