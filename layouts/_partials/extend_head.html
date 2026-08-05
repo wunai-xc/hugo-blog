@@ -1,5 +1,27 @@
 {{- /* 扩展头部：KaTeX CSS + 三栏布局 CSS + 代码块美化 + PWA Service Worker */ -}}
 
+{{- /* ========== 首次访问强制进入首页（确保首页被 SW 缓存，离线可访问） ==========
+   场景：用户通过文章直链首次到访，此时首页尚未缓存，离线时无法回到首页。
+   策略：首次访问（localStorage 无标记）且当前非首页 → location.replace 到对应语言首页。
+   仅第一次生效，之后任意页面直链进入都不再跳转。脚本置于 head 最顶部，body 渲染前同步执行避免闪烁。 */ -}}
+<script>
+  (function () {
+    try {
+      var KEY = 'home-primed-v1';
+      if (localStorage.getItem(KEY)) return;            // 非首次访问，放行
+      var p = location.pathname.replace(/\/+$/, '') || '/';
+      if (p === '/' || p === '/zh' || p === '/en') {    // 已在首页，标记后放行
+        localStorage.setItem(KEY, '1');
+        return;
+      }
+      // 首次访问且非首页 → 跳转到对应语言首页（replace 不留历史，避免后退循环）
+      localStorage.setItem(KEY, '1');                    // 先标记，防止目标页重复判断
+      var home = p.indexOf('/en') === 0 ? '/en/' : '/zh/';
+      location.replace(home);
+    } catch (e) { /* localStorage 不可用时静默放行 */ }
+  })();
+</script>
+
 {{- /* ========== 全站默认字号调整：18px → 14px（所有页面生效） ========== */ -}}
 <style>
   html { font-size: 14px; }
