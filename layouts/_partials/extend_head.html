@@ -574,11 +574,11 @@
 
   /* ========== 打印样式优化（@media print） ========== */
   /* 目标：让 window.print() / 另存 PDF 输出干净、密度合理的文档 */
-  /* A4 高密度排版：正文 9px，标题明显大于正文，代码/表格可读 */
+  /* A4 排版：正文 11px(≈3mm)，标题明显大于正文，代码/表格可读 */
   @media print {
     /* 1. 强制重置用户调节的字号 —— 用 body 前缀提高优先级，覆盖 header.html 中 #font-scale-style 的 !important */
     body .post-content {
-      font-size: 9px !important;
+      font-size: 11px !important;
       line-height: 1.3 !important;
       color: #000 !important;
       background: #fff !important;
@@ -591,12 +591,12 @@
     }
 
     /* 标题明显大于正文，层级清晰 */
-    .post-content h1 { font-size: 20px !important; margin: 8px 0 4px !important; line-height: 1.2 !important; }
-    .post-content h2 { font-size: 16px !important; margin: 7px 0 3px !important; line-height: 1.2 !important; }
-    .post-content h3 { font-size: 13px !important; margin: 5px 0 2px !important; line-height: 1.2 !important; }
-    .post-content h4 { font-size: 11px !important; margin: 4px 0 2px !important; line-height: 1.2 !important; }
-    .post-content h5 { font-size: 10px !important; margin: 4px 0 2px !important; line-height: 1.2 !important; }
-    .post-content h6 { font-size: 9px !important; margin: 3px 0 2px !important; line-height: 1.2 !important; }
+    .post-content h1 { font-size: 24px !important; margin: 8px 0 4px !important; line-height: 1.2 !important; }
+    .post-content h2 { font-size: 20px !important; margin: 7px 0 3px !important; line-height: 1.2 !important; }
+    .post-content h3 { font-size: 16px !important; margin: 5px 0 2px !important; line-height: 1.2 !important; }
+    .post-content h4 { font-size: 13px !important; margin: 4px 0 2px !important; line-height: 1.2 !important; }
+    .post-content h5 { font-size: 12px !important; margin: 4px 0 2px !important; line-height: 1.2 !important; }
+    .post-content h6 { font-size: 11px !important; margin: 3px 0 2px !important; line-height: 1.2 !important; }
 
     /* 2. 隐藏所有非正文元素：顶栏、菜单、侧栏、TOC、字号按钮、评论、页脚、按钮等 */
     .header,
@@ -649,7 +649,7 @@
     html, body {
       background: #fff !important;
       color: #000 !important;
-      font-size: 9px !important;
+      font-size: 11px !important;
     }
     body {
       margin: 0.8cm !important;
@@ -668,12 +668,12 @@
       margin-bottom: 5px !important;
     }
     .post-title {
-      font-size: 22px !important;
+      font-size: 26px !important;
       color: #000 !important;
       margin: 0 0 4px !important;
     }
     .post-meta {
-      font-size: 8px !important;
+      font-size: 10px !important;
       color: #444 !important;
       margin: 0 !important;
     }
@@ -688,21 +688,21 @@
       border-radius: 0 !important;
     }
     .post-content .highlight pre {
-      font-size: 8.5px !important;
+      font-size: 10px !important;
       line-height: 1.3 !important;
       padding: 4px 6px !important;
       white-space: pre-wrap !important;
       word-wrap: break-word;
     }
     .post-content :not(pre) > code {
-      font-size: 8.5px !important;
+      font-size: 10px !important;
       padding: 0 2px !important;
     }
 
     /* 7. 链接：打印时显示 URL（方便纸质阅读时查阅） */
     .post-content a[href]::after {
       content: " (" attr(href) ")";
-      font-size: 7px;
+      font-size: 8px;
       color: #555;
       word-wrap: break-word;
     }
@@ -731,9 +731,9 @@
       padding: 1px 3px !important;
       margin: 1px 0 !important;
     }
-    .post-references-body { font-size: 8px !important; }
-    .post-references-num { font-size: 8px !important; min-width: 20px !important; }
-    .post-references-meta { font-size: 7px !important; }
+    .post-references-body { font-size: 10px !important; }
+    .post-references-num { font-size: 10px !important; min-width: 20px !important; }
+    .post-references-meta { font-size: 8px !important; }
 
     /* 10. 暗色主题在打印时强制回浅色 */
     [data-theme="dark"] {
@@ -760,7 +760,7 @@
     }
 
     /* 12. 表格字号增大，可读性优先 */
-    .post-content table { font-size: 8.5px !important; }
+    .post-content table { font-size: 10px !important; }
     .post-content th, .post-content td {
       padding: 2px 4px !important;
     }
