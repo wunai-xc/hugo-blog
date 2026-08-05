@@ -19,6 +19,9 @@ summaryLength = 30
 [markup.goldmark.renderer]
   unsafe = true
 
+[markup.goldmark.extensions]
+  math = true
+
 [markup.highlight]
   noClasses = false
 

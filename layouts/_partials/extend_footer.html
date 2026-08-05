@@ -42,6 +42,11 @@
 </aside>
 
 {{- /* 2. KaTeX JS + mhchem extension + auto-render */ -}}
+{{- /* 注意：Hugo goldmark-math 已将 $...$ 转为 <span class="math inline">、$$...$$ 转为 <div class="math display">
+   KaTeX auto-render 同时处理两种来源：
+   1. Hugo 生成的 .math.inline / .math.display 元素
+   2. 直接文本中的 $...$ / $$...$$ （fallback，兼容历史内容）
+   使用 ignoreClass 和 processEscapes 确保不重复处理 */ -}}
 <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"
   integrity="sha384-7zkQWkzuo3B5mTepMUcHkMB5jZaolc2xDwL6VFqjFALcbeS9Ggm/Yr2r3Dy4lfFg" crossorigin="anonymous"></script>
 <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/mhchem.min.js"
@@ -57,6 +62,9 @@
     ],
     throwOnError:false,
     strict:false,
+    processEscapes:true,
+    processEnvironments:true,
+    ignoreClass:'no-render|norender',
     macros:{
       '\\RR':'\\mathbb{R}',
       '\\CC':'\\mathbb{C}',
