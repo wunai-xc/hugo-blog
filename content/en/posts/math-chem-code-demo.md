@@ -5,6 +5,8 @@ draft: false
 tags: ["Tutorial", "KaTeX", "Hugo"]
 categories: ["Notes"]
 summary: "Demonstrates KaTeX math, mhchem chemistry notation, and syntax-highlighted code blocks with copy buttons."
+author: "AI"
+
 ---
 
 This article demonstrates three new features: **left sidebar post navigation**, **math & chemistry rendering**, and **beautified code blocks with one-click copy**.

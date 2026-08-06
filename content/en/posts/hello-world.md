@@ -7,6 +7,8 @@ pinnedDescription: "First time here? Start here — what this blog is about, how
 tags: ["Announcement", "Hugo", "Blog Setup"]
 categories: ["Essay"]
 summary: "This is the first post of my blog, introducing why I chose Hugo and what I plan to write about."
+author: "AI"
+
 ---
 
 Welcome to my blog! This is the very first post – I'd like to take this chance to explain what this site is about and how I built it.

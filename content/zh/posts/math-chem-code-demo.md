@@ -5,6 +5,7 @@ draft: false
 tags: ["教程", "KaTeX", "Hugo"]
 categories: ["笔记"]
 summary: "演示博客中数学公式（KaTeX）、化学符号（mhchem）、代码块高亮与复制以及参考文献引用功能的使用方法与效果。"
+author: "AI"
 
 references:
   - title: 'KaTeX 官方文档'

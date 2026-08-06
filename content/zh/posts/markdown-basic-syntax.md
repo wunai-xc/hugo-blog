@@ -5,6 +5,8 @@ draft: false
 tags: ["Markdown", "教程", "写作"]
 categories: ["技术"]
 summary: "Markdown 是一种轻量级标记语言，排版语法简洁，让人们更多地关注内容本身而非排版。本文压缩整理自 markdown.com.cn 官方教程，涵盖标题、段落、强调、引用、列表、代码、链接、图片、分隔线与转义字符等全部基本语法。"
+author: "AI"
+
 ---
 
 ## 什么是 Markdown

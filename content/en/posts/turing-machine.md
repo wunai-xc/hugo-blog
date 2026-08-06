@@ -5,6 +5,8 @@ draft: false
 tags: ["Turing Machine", "Computation Theory", "Busy Beaver", "Halting Problem", "Computability"]
 categories: ["Computer Science"]
 summary: "This article explores the principles and algorithms of Turing machines, analyzes the mind-boggling 6-state Busy Beaver problem, and presents a rigorous proof of the undecidability of the Halting Problem."
+author: "AI"
+
 ---
 
 ## Introduction

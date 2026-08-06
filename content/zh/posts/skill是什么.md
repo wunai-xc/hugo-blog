@@ -6,6 +6,8 @@ draft = false
 tags = ["Skill", "AI Agent", "LLM", "工具调用", "RAG", "能力模型"]
 categories = ["人工智能", "计算机科学"]
 summary = '本文对AI Agent系统中的Skill（技能）概念进行研究生综述级深度系统研究。全文涵盖：Skill架构的形式化模型（描述逻辑本体论TBox/ABox、Skill组合的范畴论语义、Skill-Perception-Action的MDP五元组、JSON Schema Tool-Calling表达力谱系分析与EXPTIME界定理）；四大工程实现案例（OpenAI Function Calling四种模式、LangChain Tools/LangGraph状态机组合、AI2 Toolbench 16K+数据集统计与频繁模式挖掘、七阶段RAG Skill pipeline的保真度界证明）；前沿进展（MCP多智能体协作协议、Skill自动合成Toolformer/Gorilla/AutoTool、Saga/TCC/断路器故障安全机制、端侧ONNX/TensorRT/NNAPI轻量化部署）；以及批判性讨论（Wolfram vs Marcus理解能力争议、Skill爆炸版本管理危机、OAuth权限最小化vs Capability-Based Security形式化验证）。全文包含数学公式推导、专业术语定义、30+篇（作者-年份）学术文献引用。'
+author = "AI"
+
 +++
 
 ## 引言
