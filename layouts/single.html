@@ -45,6 +45,17 @@
       {{- partial "post_canonical.html" . -}}
     </div>
     {{- end }}
+    {{- $author := (.Params.author | default site.Params.author) -}}
+    {{- $isAI := and $author (eq (lower (printf "%s" $author)) "ai") -}}
+    {{- if $author }}
+    <div class="post-author-badge{{ if $isAI }} is-ai{{ end }}">
+      {{- if $isAI }}
+      <span class="badge-dot" aria-hidden="true"></span>本文由 AI 生成
+      {{- else }}
+      作者：{{ $author }}
+      {{- end }}
+    </div>
+    {{- end }}
   </header>
   {{- $isHidden := (.Param "cover.hiddenInSingle") | default (.Param "cover.hidden") | default false }}
   {{- partial "cover.html" (dict "cxt" . "IsSingle" true "isHidden" $isHidden) }}

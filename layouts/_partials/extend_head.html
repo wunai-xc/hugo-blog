@@ -218,6 +218,62 @@
   }
 </style>
 
+{{- /* ========== 作者标识：AI 文章卡片浅蓝 + 文章页作者徽章 ========== */ -}}
+<style>
+  /* AI 作者卡片：浅色模式浅蓝，深色模式克莱因蓝（提亮以保证可读） */
+  .ai-author .entry-header h2,
+  .ai-author .entry-content,
+  .ai-author .entry-content p,
+  .ai-author .entry-footer,
+  .ai-author .entry-footer span,
+  .ai-author.pinned-entry .pinned-content,
+  .ai-author.pinned-entry .pinned-content p,
+  .ai-author.pinned-entry .pinned-footer,
+  .ai-author.pinned-entry .pinned-footer span,
+  .ai-author.pinned-entry .entry-header h2 {
+    color: #3b82f6;
+  }
+  [data-theme="dark"] .ai-author .entry-header h2,
+  [data-theme="dark"] .ai-author .entry-content,
+  [data-theme="dark"] .ai-author .entry-content p,
+  [data-theme="dark"] .ai-author .entry-footer,
+  [data-theme="dark"] .ai-author .entry-footer span,
+  [data-theme="dark"] .ai-author.pinned-entry .pinned-content,
+  [data-theme="dark"] .ai-author.pinned-entry .pinned-content p,
+  [data-theme="dark"] .ai-author.pinned-entry .pinned-footer,
+  [data-theme="dark"] .ai-author.pinned-entry .pinned-footer span,
+  [data-theme="dark"] .ai-author.pinned-entry .entry-header h2 {
+    color: #3a6fff; /* 克莱因蓝提亮版，深底可读 */
+  }
+
+  /* 文章页作者徽章 */
+  .post-author-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    margin: 10px 0 0;
+    padding: 5px 13px;
+    font-size: 13px;
+    font-weight: 500;
+    border-radius: 999px;
+    background: var(--code-bg, rgba(0,0,0,.06));
+    color: var(--secondary);
+    line-height: 1.4;
+  }
+  .post-author-badge.is-ai {
+    background: #3b82f6;
+    color: #fff;
+  }
+  [data-theme="dark"] .post-author-badge.is-ai {
+    background: #3a6fff;
+    color: #fff;
+  }
+  .post-author-badge .badge-dot {
+    width: 7px; height: 7px; border-radius: 50%;
+    background: currentColor; opacity: .85;
+  }
+</style>
+
 {{- /* ========== 仅文章详情页注入的增强（KaTeX / 三栏布局 / 代码块美化） ========== */ -}}
 {{- if .IsPage }}
 

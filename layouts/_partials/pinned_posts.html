@@ -4,7 +4,9 @@
 {{- if eq $cxt.Lang "en" -}}{{- $label = "Pinned" -}}{{- end -}}
 
 {{- range $i, $page := .pages }}
-<article class="pinned-entry">
+{{- $pauthor := ($page.Params.author | default site.Params.author) -}}
+{{- $pisAI := and $pauthor (eq (lower (printf "%s" $pauthor)) "ai") }}
+<article class="pinned-entry{{ if $pisAI }} ai-author{{ end }}">
   <span class="pinned-badge" aria-label="{{ $label }}">
     <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24"
       fill="currentColor" stroke="none" aria-hidden="true">
