@@ -4,7 +4,7 @@
  * 每次修改此文件需更新 CACHE_VERSION，用户会自动激活新版本
  * ========================================================================== */
 
-const CACHE_VERSION = 'v1.0.0-20260804';
+const CACHE_VERSION = 'v1.0.1-20260806';
 const STATIC_CACHE  = `static-${CACHE_VERSION}`;   // CSS/JS/图片/字体（长缓存）
 const PAGES_CACHE   = `pages-${CACHE_VERSION}`;    // 访问过的 HTML 页面
 const RUNTIME_CACHE = `runtime-${CACHE_VERSION}`;  // 其他运行时资源
@@ -83,11 +83,20 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
-  // 静态资源（带 hash 指纹的 CSS/JS + 图片/字体）→ Cache First：命中就直接用
+  // 静态资源（CSS/JS/图片/字体）→ Stale While Revalidate
+  // 说明：原先使用 Cache First 会导致带新 hash 的 CSS/JS 永远不被请求（旧HTML引用旧路径被命中），
+  // 尤其是移动端首次安装 SW 后缓存了一份"坏CSS"（rel=preload stylesheet 兼容问题导致），
+  // 会一直被锁死无法自愈。改为 SWR：每次命中缓存后，后台仍会异步拉取最新版本，
+  // 下次访问即可使用新版本，兼顾离线可用性与自动更新能力。
   if (isStaticAsset(url, req)) {
-    // 同站资源用 Cache First；CDN 资源用 Network First，避免缓存过期
     if (url.origin === location.origin) {
-      event.respondWith(cacheFirst(req, STATIC_CACHE));
+      // PaperMod 带 hash 的 css/js（路径含 /assets/css/ 或 /assets/js/）用 SWR，
+      // 图片/字体等纯静态资源仍 Cache First（体积大且内容稳定）
+      if (/\/assets\/(css|js)\//.test(url.pathname)) {
+        event.respondWith(staleWhileRevalidate(req, STATIC_CACHE));
+      } else {
+        event.respondWith(cacheFirst(req, STATIC_CACHE));
+      }
     } else if (ALLOWED_CDN_ORIGINS.has(url.hostname)) {
       event.respondWith(networkFirst(req, RUNTIME_CACHE));
     }
