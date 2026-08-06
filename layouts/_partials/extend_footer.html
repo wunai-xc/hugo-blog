@@ -1,45 +1,9 @@
 {{- /* 扩展尾部：左栏文章导航 + KaTeX 渲染 + 三栏布局脚本 */ -}}
 {{- if .IsPage }}
 
-{{- /* 1. 左栏：当前 Section 所有文章（Hugo 模板直接生成，无需 fetch） */ -}}
-{{- $curPermalink := .RelPermalink }}
+{{- /* 1. leftSidebar 已移至 single.html（main block 内），避免被 footer partialCached
+     缓存导致跨页面内容冻结。此处仅保留 $isEn 供下方 TOC 标题使用。 */ -}}
 {{- $isEn := hasPrefix .RelPermalink "/en/" }}
-{{- $pageLang := cond $isEn "en" "zh" }}
-{{- $sidebarTitle := cond $isEn "All Posts" "全部文章" }}
-{{- $section := cond $isEn (site.GetPage "section" "en/posts") (site.GetPage "section" "zh/posts") }}
-<aside id="left-sidebar" style="display:none">
-  <h3 class="sidebar-title">{{ $sidebarTitle }}</h3>
-  <ul class="post-list">
-  {{- range $section.RegularPagesRecursive.ByDate.Reverse }}
-    {{- $isCurrent := eq .RelPermalink $curPermalink }}
-    <li class="post-item{{ if $isCurrent }} current{{ end }}">
-      <a href="{{ .RelPermalink }}" title="{{ .Title }}">{{ .Title }}<span class="cache-dot" data-url="{{ .RelPermalink }}" aria-hidden="true"></span></a>
-    </li>
-  {{- else }}
-    {{- /* fallback：没有 RegularPagesRecursive 时，遍历 section.Pages */ -}}
-    {{- range $section.Pages }}
-      {{- $isCurrent := eq .RelPermalink $curPermalink }}
-      {{- if eq .Kind "page" }}
-        <li class="post-item{{ if $isCurrent }} current{{ end }}">
-          <a href="{{ .RelPermalink }}" title="{{ .Title }}">{{ .Title }}<span class="cache-dot" data-url="{{ .RelPermalink }}" aria-hidden="true"></span></a>
-        </li>
-      {{- else if eq .Kind "section" }}
-        <li class="section-group">
-          <div class="section-group-title">{{ .Title }}</div>
-          <ul class="post-list">
-          {{- range .RegularPages.ByDate.Reverse }}
-            {{- $isCurrent := eq .RelPermalink $curPermalink }}
-            <li class="post-item{{ if $isCurrent }} current{{ end }}">
-              <a href="{{ .RelPermalink }}" title="{{ .Title }}">{{ .Title }}<span class="cache-dot" data-url="{{ .RelPermalink }}" aria-hidden="true"></span></a>
-            </li>
-          {{- end }}
-          </ul>
-        </li>
-      {{- end }}
-    {{- end }}
-  {{- end }}
-  </ul>
-</aside>
 
 {{- /* 2. KaTeX JS + mhchem extension + 自定义渲染器 */ -}}
 {{- /* math-render.js 直接扫描 DOM 中的 $...$ / $$...$$ / \[...\] / \(...\) 模式，
@@ -183,10 +147,16 @@ window.addEventListener('load', function () {
           li.classList.add('active');
           const rightToc = document.getElementById('right-toc');
           if (rightToc && rightToc.contains(li)) {
-            const rect = li.getBoundingClientRect();
-            const tocRect = rightToc.getBoundingClientRect();
-            if (rect.top < tocRect.top + 40 || rect.bottom > tocRect.bottom - 40) {
-              li.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+            // 仅在 #right-toc 容器内部滚动，绝不触发页面级滚动
+            const liTop = li.offsetTop - rightToc.offsetTop;
+            const liH = li.offsetHeight;
+            const tocH = rightToc.clientHeight;
+            const cur = rightToc.scrollTop;
+            if (liTop < cur + 40 || liTop + liH > cur + tocH - 40) {
+              rightToc.scrollTo({
+                top: Math.max(0, liTop - (tocH - liH) / 2),
+                behavior: 'smooth'
+              });
             }
           }
         }
