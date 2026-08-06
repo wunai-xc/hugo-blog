@@ -16,7 +16,7 @@ Welcome to my blog! This is the very first post – I'd like to take this chance
 After trying out Astro and Hexo, I finally settled on Hugo. Here's why:
 
 - **Blazing fast** – generates thousands of pages in milliseconds
-- **Zero-dependency deployment** – outputs plain static files, ready to host on Cloundflare Pages
+- **Zero-dependency deployment** – outputs plain static files, ready to host on Clondflare Pages
 - **Native multi-language support** – seamless bilingual switching
 - **Rich theme ecosystem** – themes like PaperMod work out of the box
 
