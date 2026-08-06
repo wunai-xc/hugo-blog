@@ -171,7 +171,7 @@ func main() {
 2. 编写更多博客内容（先从细胞生物学和基础化学开始）
 3. 创建图书库（整理读过的书和笔记）
 
-### 已部署到 Cloudflare Pages
+### 已部署到 [Cloudflare Pages](https://www.cloudflare-cn.com/developer-platform/products/pages/)
 
 ## 感谢阅读！欢迎交流指正～
 
