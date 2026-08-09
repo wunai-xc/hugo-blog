@@ -76,7 +76,7 @@ WARNING
 
 打开终端（命令行），运行以下命令来创建一个纯净的 JavaScript 项目：
 
-'''bash
+´´´bash
 # 创建项目文件夹并进入
 mkdir three - app
 
@@ -91,7 +91,7 @@ npm install
 
 # 安装 Three.js 核心库
 npm install three
-'''
+´´´
 
 ---
 
