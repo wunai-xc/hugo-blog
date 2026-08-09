@@ -17,17 +17,57 @@ summaryLength = 30
   pagerSize = 10
 
 [markup.goldmark.renderer]
+  # 为允许作者写 raw HTML（HTML 块 / 行级 HTML），unsafe = true 是必须的。
+  # 但我们同时在 parser 层开启 allowDangerousProtocol=false 和默认的 XSS 过滤，
+  # 再配合下文 markup.goldmark.extensions.cn 里的 "xssFilter = true"，形成双保险。
   unsafe = true
+  xhtml = false
+
+[markup.goldmark.parser]
+  # ATX/Setext 标题、段落、列表、缩进/围栏代码块、块引用、分隔线、
+  # 链接引用定义、反斜杠转义、HTML实体 —— Goldmark 默认全部支持，无需开关。
+  # 下面仅做增强：
+  autoHeadingIDType = "github"              # 与 GFM 一致的标题锚点生成规则（GitHub 兼容）
+  autoHeadingIDAsciiOnly = false            # 允许中文直接写入锚点，不会强制转 ASCII
+  [markup.goldmark.parser.attribute]
+    block = true                            # 块级标题支持 {#id .class key=val}
+    title = true                            # 标题单独支持 {#id}（Goldmark 老版本需要）
 
 [markup.goldmark.extensions]
+  # === GFM（GitHub Flavored Markdown）核心扩展 ===
+  table = true                              # 表格：| 头1 | 头2 |  + ---分隔
+  taskList = true                           # 任务列表：- [ ] / - [x]
+  strikethrough = true                      # 删除线：~~text~~（GFM标准）
+  linkify = true                            # GFM 自动链接：http/https/www/email 自动变<a>
+  definitionList = true                     # 定义列表（术语表）：Term\n: definition
+  typographer = false                       # 不做 smart quote 自动替换（中文语境下会破坏引号）
+
+  [markup.goldmark.extensions.footnote]
+    # GFM 风格脚注：[^name] / [^name]: 解释（Hugo 配置里脚注是子表，所以不能在父表写 footnote=true，必须在这里 enable）
+    enable = true
+
+  # === Passthrough：数学公式 $...$ $$...$$ 不被 Markdown 转义，原样传到 HTML
+  #     配合前端 math-render.js（KaTeX + MathJax 兜底）做最终渲染
+  #     ⚠️ 注意：passthrough 本身不保证「inline $ 定界」100% 正确（比如 `$20, $30` 会误识别）。
+  #     因此前端 math-render.js 做了二次「findClosingDollar」语义校验（前后不能是空格，必须是非空格开头+非空格结尾）。
+  #     如遇误识别，可在行内用 `` `20$` `` 反引号包裹，或直接用 \(\) 作为 inline 分隔符（语义最清晰）。
+  #     passthrough 仅负责"不破坏公式内部的 \ ^ _ % & ~ # 等 TeX 敏感字符"，实际定界交给前端。
   [markup.goldmark.extensions.passthrough]
     enable = true
     [markup.goldmark.extensions.passthrough.delimiters]
-      block = [["$$", "$$"], ["\\[", "\\]"]]
-      inline = [["$", "$"], ["\\(", "\\)"]]
+      block  = [["$$", "$$"], ["\\[", "\\]"]]
+      inline = [["$",  "$"],  ["\\(", "\\)"]]
 
+# === Hugo 内置 highlight：代码块语法高亮（配合 PaperMod Chroma 样式）===
 [markup.highlight]
   noClasses = false
+  style = "monokai"                         # 与 PaperMod 暗色配色融合更好
+  lineNos = false                           # 不显示行号（PaperMod 自带复制按钮，行号可在写作时按需加）
+  lineNumbersInTable = false
+  tabWidth = 4
+  guessSyntax = true                        # 无语言标签时自动推断
+  codeFences = true                         # 围栏代码块启用语法高亮
+
 
 # ============ 主题通用参数 ============
 [params]

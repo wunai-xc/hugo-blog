@@ -1,13 +1,409 @@
-{{- /* 扩展尾部：左栏文章导航 + KaTeX 渲染 + 三栏布局脚本 */ -}}
+{{- /* 扩展尾部：图表/乐谱库 + 数学公式 + 中文优化 + 左栏导航/三栏布局 */ -}}
 {{- if .IsPage }}
 
-{{- /* 1. leftSidebar 已移至 single.html（main block 内），避免被 footer partialCached
-     缓存导致跨页面内容冻结。此处仅保留 $isEn 供下方 TOC 标题使用。 */ -}}
+{{- /* 1. leftSidebar 已移至 single.html（main block 内），此处仅保留 $isEn */ -}}
 {{- $isEn := hasPrefix .RelPermalink "/en/" }}
 
-{{- /* 2. KaTeX JS + mhchem extension + 自定义渲染器 */ -}}
-{{- /* math-render.js 直接扫描 DOM 中的 $...$ / $$...$$ / \[...\] / \(...\) 模式，
-   用 KaTeX 渲染，不依赖 auto-render 的 delimiter 检测（已知有 bug） */ -}}
+{{- /* ============================================================
+   2. 图表 & 乐谱 & XSS 过滤 库引入（按需：只有页面包含对应代码块才 load）
+   支持：Mermaid / Graphviz (viz.js) / ECharts / abc.js (五线谱)
+   所有库均走 jsDelivr CDN，defer 加载，互不阻塞
+   ============================================================ */ -}}
+<script>
+(function () {
+  // === 工具：按需加载 script ===
+  var pending = {};
+  function loadScript(src, attrs) {
+    if (pending[src]) return pending[src];
+    return pending[src] = new Promise(function (res, rej) {
+      var s = document.createElement('script');
+      s.defer = true;
+      s.src = src;
+      if (attrs) for (var k in attrs) s.setAttribute(k, attrs[k]);
+      s.onload = function () { res(true); };
+      s.onerror = function () { pending[src] = null; rej(new Error('load fail: '+src)); };
+      document.head.appendChild(s);
+    });
+  }
+
+  function postReady(fn) {
+    if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', fn);
+    else fn();
+  }
+
+  // === Mermaid 渲染：流程图 / 时序图 / 甘特图 / 类图 / 状态图 / 饼图 / Git 图等 ===
+  function renderMermaid() {
+    var nodes = document.querySelectorAll('.post-content pre.language-mermaid > code');
+    if (!nodes.length) return Promise.resolve();
+    return loadScript('https://cdn.jsdelivr.net/npm/mermaid@10.9.1/dist/mermaid.min.js').then(function () {
+      mermaid.initialize({
+        startOnLoad: false,
+        securityLevel: 'strict',
+        theme: document.documentElement.getAttribute('data-theme') === 'dark' ? 'dark' : 'default',
+        themeVariables: { fontSize: '15px' }
+      });
+      nodes.forEach(function (codeEl, i) {
+        var src = (codeEl.textContent || '').trim();
+        if (!src) return;
+        var id = 'mmd-' + i;
+        var wrap = document.createElement('div');
+        wrap.className = 'mermaid-wrap';
+        try {
+          // mermaid v10 API：先 render 返回 svg，再插入
+          mermaid.render(id, src).then(function (r) {
+            wrap.innerHTML = r.svg || r;
+          }).catch(function (err) {
+            wrap.innerHTML = '<pre style="color:#ef4444;padding:10px;border:1px dashed #ef4444;border-radius:6px;">'
+              + '[Mermaid 语法错误] ' + (err && err.message ? err.message : err)
+              + '\n\n' + escapeHTML(src) + '</pre>';
+          });
+        } catch (e) {
+          wrap.innerHTML = '<pre style="color:#ef4444;">[Mermaid 初始化失败] ' + e.message + '</pre>';
+        }
+        codeEl.parentElement.replaceWith(wrap);
+      });
+    });
+  }
+
+  // === Graphviz 渲染：DOT/neato/twopi/fdp/circo 等 ===
+  function renderGraphviz() {
+    var nodes = document.querySelectorAll('.post-content pre.language-graphviz > code');
+    if (!nodes.length) return Promise.resolve();
+    // viz.js 2.x 打包了 WASM，直接全功能加载
+    return Promise.all([
+      loadScript('https://cdn.jsdelivr.net/npm/@viz-js/viz@3.11.0/lib/viz-standalone.js')
+    ]).then(function () {
+      nodes.forEach(function (codeEl) {
+        var src = (codeEl.textContent || '').trim();
+        var engine = codeEl.parentElement.getAttribute('data-engine') || 'dot';
+        if (!src) return;
+        var wrap = document.createElement('div');
+        wrap.className = 'graphviz-wrap';
+        try {
+          var instance = new Viz();
+          instance.renderSVGElement(src, { engine: engine })
+            .then(function (svgEl) { wrap.appendChild(svgEl); })
+            .catch(function (err) {
+              wrap.innerHTML = '<pre style="color:#ef4444;">[Graphviz ' + engine
+                + ' 渲染失败] ' + (err && err.message || err) + '</pre>';
+            });
+        } catch (e) {
+          wrap.innerHTML = '<pre style="color:#ef4444;">[viz.js 初始化失败] ' + e.message + '</pre>';
+        }
+        codeEl.parentElement.replaceWith(wrap);
+      });
+    });
+  }
+
+  // === ECharts 渲染：折线图 / 饼图 / 脑图 / 雷达 / 散点 / 等所有 ECharts 内置图 ===
+  function renderECharts() {
+    var nodes = document.querySelectorAll('.post-content pre.language-echarts > code');
+    if (!nodes.length) return Promise.resolve();
+    return Promise.all([
+      loadScript('https://cdn.jsdelivr.net/npm/echarts@5.5.1/dist/echarts.min.js'),
+      // 脑图 echarts-wordcloud 不是必需的，mindmap 用 ECharts 官方 tree + custom 也能画，
+      // 这里加载额外的 echarts-liquidfill + wordcloud 扩展让用户开箱即用
+      loadScript('https://cdn.jsdelivr.net/npm/echarts-wordcloud@2.1.2/dist/echarts-wordcloud.min.js').catch(function(){})
+    ]).then(function () {
+      nodes.forEach(function (codeEl) {
+        var src = (codeEl.textContent || '').trim();
+        var chartType = codeEl.parentElement.getAttribute('data-chart') || 'custom';
+        var h = codeEl.parentElement.getAttribute('data-height') || '440px';
+        var w = codeEl.parentElement.getAttribute('data-width')  || '100%';
+        if (!src) return;
+        var wrap = document.createElement('div');
+        wrap.className = 'echarts-wrap';
+        var box = document.createElement('div');
+        box.style.width = w;
+        box.style.height = h;
+        box.style.background = 'var(--entry, transparent)';
+        box.style.border = '1px solid var(--border, #e5e7eb)';
+        box.style.borderRadius = '10px';
+        wrap.appendChild(box);
+        try {
+          // 支持两种写法：
+          //   A. 直接 JSON 对象（就是 ECharts 的 option）。例：{ title:{...}, xAxis:{...} }
+          //   B. 完整 JS 代码片段（以 var 开头，必须给 __opt 赋值）：
+          //       var x = [...]; __opt = { series: [...] }
+          var option;
+          var trimmed = src.trim();
+          if (/^\s*\{/.test(trimmed)) {
+            // JSON 宽松解析：允许注释，允许尾逗号
+            option = eval('(' + sanitizeEval(src) + ')');
+          } else {
+            var __opt; // eslint-disable-line
+            eval(sanitizeEval(src)); // eslint-disable-line
+            option = __opt;
+          }
+          if (!option) throw new Error('未找到 option 对象（写法：```echarts line  再写 {option JSON} 或 赋值 __opt）');
+          // 与当前主题联动
+          option.backgroundColor = option.backgroundColor || 'transparent';
+          postReady(function () {
+            var inst = echarts.init(box,
+              document.documentElement.getAttribute('data-theme') === 'dark' ? 'dark' : null);
+            inst.setOption(option);
+            var ro = new ResizeObserver(function () { inst.resize(); });
+            ro.observe(box);
+          });
+        } catch (e) {
+          wrap.innerHTML = '<pre style="color:#ef4444;">[ECharts 渲染失败] ' + e.message
+            + '\n\nchartType=' + chartType + '\n\n' + escapeHTML(src) + '</pre>';
+        }
+        codeEl.parentElement.replaceWith(wrap);
+      });
+    });
+  }
+
+  // === abc.js 五线谱渲染 ===
+  function renderAbc() {
+    var nodes = document.querySelectorAll('.post-content pre.language-abc > code');
+    if (!nodes.length) return Promise.resolve();
+    return Promise.all([
+      loadScript('https://cdn.jsdelivr.net/npm/abcjs@6.2.2/dist/abcjs-basic-min.js')
+    ]).then(function () {
+      nodes.forEach(function (codeEl) {
+        var src = (codeEl.textContent || '').trim();
+        if (!src) return;
+        var wrap = document.createElement('div');
+        wrap.className = 'abc-wrap';
+        var params = {
+          responsive: 'resize',
+          paddingleft: 14,
+          paddingright: 14,
+          staffcolor: document.documentElement.getAttribute('data-theme') === 'dark' ? '#d1d5db' : '#334155',
+          print: false
+        };
+        var staffwidth = codeEl.parentElement.getAttribute('data-staffwidth');
+        if (staffwidth) params.staffwidth = parseInt(staffwidth, 10);
+        try {
+          var result = ABCJS.renderAbc(wrap, src, params); // eslint-disable-line
+          if (!result) throw new Error('abc.js 未返回结果');
+        } catch (e) {
+          wrap.innerHTML = '<pre style="color:#ef4444;">[abc.js 五线谱渲染失败] ' + e.message
+            + '\n\n' + escapeHTML(src) + '</pre>';
+        }
+        codeEl.parentElement.replaceWith(wrap);
+      });
+    });
+  }
+
+  // === XSS 过滤：DOM 级兜底拦截 javascript:/vbscript:/data: 危险协议 ===
+  function xssFilter() {
+    var forbidProtocols = ['javascript:', 'vbscript:', 'data:'];
+    var sel = '.post-content a[href], .post-content img[src], .post-content area[href], '
+            + '.post-content script, .post-content iframe[src], .post-content embed[src], '
+            + '.post-content form[action]';
+    document.querySelectorAll(sel).forEach(function (el) {
+      ['href', 'src', 'action'].forEach(function (attr) {
+        var v = el.getAttribute(attr);
+        if (!v) return;
+        var low = String(v).trim().toLowerCase().replace(/\s+/g, '');
+        for (var i = 0; i < forbidProtocols.length; i++) {
+          if (low.indexOf(forbidProtocols[i]) === 0) {
+            // img data:image/* 放行
+            if (attr === 'src' && forbidProtocols[i] === 'data:'
+                && /^data:image\//i.test(String(v).trim())) return;
+            // 脚本/iframe 直接删除节点
+            if (el.tagName === 'SCRIPT' || el.tagName === 'IFRAME') {
+              el.remove(); return;
+            }
+            el.removeAttribute(attr);
+            if (el.tagName === 'A') el.setAttribute('aria-label', '已拦截危险链接');
+          }
+        }
+      });
+    });
+  }
+
+  // ============================================================
+  // 3. MathJax 兜底：KaTeX 渲染报错时，自动退化为 MathJax v3 渲染整篇文章公式
+  //    仅在检测到 KaTeX 渲染有报错（body 出现 .katex-error 或 math-render 失败）时触发
+  // ============================================================
+  function tryMathJaxFallback() {
+    setTimeout(function () {
+      var err = document.querySelectorAll('.post-content .katex-error, .post-content .katex .katex-error');
+      if (err.length > 0 && typeof MathJax === 'undefined') {
+        console.warn('[math] KaTeX 有 ' + err.length + ' 个报错，切换 MathJax v3 兜底');
+        window.MathJax = {
+          tex: {
+            inlineMath: [['$','$'], ['\\(','\\)']],
+            displayMath: [['$$','$$'], ['\\[','\\]']],
+            processEscapes: true
+          },
+          options: { skipHtmlTags: ['script','noscript','style','textarea','pre','code','kbd'] }
+        };
+        var s = document.createElement('script');
+        s.defer = true;
+        s.src = 'https://cdn.jsdelivr.net/npm/mathjax@3.2.2/es5/tex-mml-chtml.js';
+        document.head.appendChild(s);
+      }
+    }, 1200);
+  }
+
+  // ============================================================
+  // 4. 中文语境优化：中西文加细空格 + 标点替换 + 术语拼写修正
+  //    对应需求：
+  //     · 中西文之间插入空格
+  //     · 中文后跟英文逗号句号等标点替换为中文对应标点
+  //     · 术语拼写修正
+  // ============================================================
+  function cnTextOptimize() {
+    var root = document.querySelector('.post-content');
+    if (!root) return;
+
+    var SKIP = ['CODE', 'PRE', 'SCRIPT', 'STYLE', 'KBD', 'VAR', 'SAMP', 'TEXTAREA', 'INPUT', 'SELECT',
+               'MATH', 'SVG', 'CANVAS'];
+    var skipClass = ['katex', 'katex-display', 'mermaid-wrap', 'graphviz-wrap', 'echarts-wrap', 'abc-wrap',
+                     'ref-mark', 'no-render', 'chem-structure', 'post-references-link', 'highlighted'];
+
+    // ===== 术语拼写修正（只修正 99.9% 确认不会错的常见写法） =====
+    var TERM_PAIRS = [
+      // 前端常见错写
+      [/Three\.sj(?![A-Za-z])/g,      'Three.js'],
+      [/JavasScript(?![A-Za-z])/g,    'JavaScript'],
+      [/Javascript(?![A-Za-z])/g,     'JavaScript'],
+      [/Typescript(?![A-Za-z])/g,     'TypeScript'],
+      [/Html(?![A-Za-z])/g,           'HTML'],
+      [/CSS3(?![A-Za-z])/g,           'CSS'],
+      // 中文术语常见错别字
+      [/结点(?![一二三四五六七八九十])/g, '节点'],
+      [/位元/g,                         '比特'],
+      [/字符集(?![合族])/g,             '字符集'],
+    ];
+
+    function apply(s) {
+      if (!s) return s;
+      var out = s;
+      // (1) 术语修正（先做，保证后面的标点规则看到的是正确文字）
+      for (var ti = 0; ti < TERM_PAIRS.length; ti++) {
+        out = out.replace(TERM_PAIRS[ti][0], TERM_PAIRS[ti][1]);
+      }
+
+      // (2) 中文标点替换：中文字符后的「.,!?;:」→「。，！？；：」
+      //     例外：
+      //       · 十进制数字 3.14 或 1,024 的小数点/千分位
+      //       · 列表编号：1. 2. 3.
+      //       · URL/域名/邮箱：blog.wunai.top  a@x.com
+      //       · 缩写：U.S.A.  e.g.  i.e.  etc.  vs.  Mr.
+      //       · 时间 8:30
+      out = out.replace(/([\u4e00-\u9fff\uff00-\uffef])([.,!?;:])(?=\s|$|\n|[\u4e00-\u9fff\uff00-\uffef"']|[\(\)\[\]\{\}])/g,
+        function (m, cn, punc, offset, str) {
+          var prevChar = (offset > 0) ? str.charAt(offset - 1) : '';
+          var nextChar = str.charAt(offset + 2) || '';
+          // 排除 "中文.数字" → 这是中文后直接 3.14？其实前面是中文，应该不会是数字编号
+          //   但反过来 "数字.数字" 排除
+          if (/[0-9]/.test(prevChar) && /[0-9]/.test(nextChar)) return m;
+          // 排除 URL/邮箱（前面/后面都是英文）：如果 next 是 a-z/A-Z/0-9 且 punc==='.' 大概率是域名
+          if (punc === '.' && /[A-Za-z0-9]/.test(nextChar)) return m;
+          // 排除常见缩写（e.g./i.e./etc./vs./Mr./Ms./Dr./St. ）：标点前有英文字母
+          if (punc === '.' && /[A-Za-z]/.test(prevChar)) return m;
+          // 排除 1. 2. 3. 列表编号：标点前是数字，且再前一位是行首或空白
+          if (punc === '.' && /[0-9]/.test(prevChar)) {
+            var idx = offset - 1;
+            while (idx >= 0 && /[0-9]/.test(str.charAt(idx))) idx--;
+            if (idx < 0 || /^[\s\n>]/.test(str.charAt(idx))) return m;
+          }
+          // 排除时间 H:MM：前是数字，后是数字
+          if (punc === ':' && /[0-9]/.test(prevChar) && /[0-9]/.test(nextChar)) return m;
+          // 正常映射
+          var map = { '.':'。', ',':'，', '!':'！', '?':'？', ';':'；', ':':'：' };
+          return cn + (map[punc] || punc);
+        }
+      );
+
+      // (3) 中西文加空格：
+      //     规则 A：「中文」与「a-zA-Z0-9/+/=*#%&@$°€£」之间无任何空白时插入细空格
+      //     跳过：
+      //       · HTML 实体 &xxx;（上一步已实体化，这里一般不会有）
+      //       · 日期 2024年1月 / 第1章 这种本来不需要空格的汉字前后的数字
+      //       · 代码/链接中的原文（由 SKIP_CLASS 保证不进入 walk 循环）
+      var CN = '[\u4e00-\u9fff\uff00-\uffef]';
+      var WEST = '[A-Za-z0-9\\+\\/=\\*#%&@\\$°€£§]';
+
+      var re1 = new RegExp('(' + CN + ')(' + WEST + ')', 'g');
+      var re2 = new RegExp('(' + WEST + ')(' + CN + ')', 'g');
+
+      out = out.replace(re1, function (m, a, b, off, src) {
+        // 排除数字中文组合：1月 3日 2024年 第1章 第1节 第1版
+        if (/[0-9]/.test(b)) {
+          // 后面跟着中文量词/单位？
+          if (/^(月|日|年|章|节|版|次|周|天|小时|分钟|秒|米|公里|千克|克|元|度|个|只|条|本|张|块|瓶|杯|盒|箱|篇|封|份|级|层|匹|台|辆|楼|页|行|列|种|类|点|分|码|寸|尺|斤|磅|磅|吨|寸|尺|口|人|P|K|M|G|T|Hz|GHz|mAh)$/.test(b)) {
+            return a + b; // 2024年 / 3月 不加空格
+          }
+          // 数字紧跟中文：数字如果是"章1节2" 这种前面是中文数字+量词后再加阿拉伯，保留
+        }
+        return a + '\u2009' + b; // U+2009 Thin Space
+      });
+      out = out.replace(re2, function (m, a, b, off, src) {
+        // 排除 "X月1日" / "第3章" 这种 数字 后接 量词 中文
+        if (/[0-9]/.test(a) && /^(第|共|年|月|日|章|节|版|次|周|天|小时|分钟|秒|米|公里|千克|克|元|度|个|只|条|本|张|块|瓶|杯|盒|箱|篇|封|份|级|层|匹|台|辆|楼|页|行|列|种|类|点|分|码|寸|尺|斤|磅|吨|口|人)$/.test(b)) {
+          return a + b;
+        }
+        return a + '\u2009' + b;
+      });
+
+      return out;
+    }
+
+    function walk(node) {
+      if (node.nodeType === 3) {
+        var txt = node.nodeValue;
+        if (!txt) return;
+        var after = apply(txt);
+        if (after !== txt) node.nodeValue = after;
+        return;
+      }
+      if (node.nodeType !== 1) return;
+      if (SKIP.indexOf(node.tagName) !== -1) return;
+      if (node.classList) {
+        for (var ci = 0; ci < skipClass.length; ci++) {
+          if (node.classList.contains(skipClass[ci])) return;
+        }
+      }
+      var children = Array.prototype.slice.call(node.childNodes);
+      for (var i = 0; i < children.length; i++) walk(children[i]);
+    }
+
+    walk(root);
+  }
+
+  // ===== helper =====
+  function escapeHTML(s) {
+    return String(s).replace(/[&<>"']/g, function (c) {
+      return { '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[c];
+    });
+  }
+  // eval 前的小清理：去除单行 // comment，防止 JSON 里带注释
+  function sanitizeEval(s) {
+    return String(s)
+      .replace(/^[\t ]*\/\/[^\n]*/gm, '')
+      .replace(/\/\*[\s\S]*?\*\//g, '');
+  }
+
+  // ===== 启动 =====
+  postReady(function () {
+    // 先做中文优化（在任何渲染之前，保证后续库看到的文本规范）
+    try { cnTextOptimize(); } catch (e) { console.warn('[cn-opt]', e); }
+
+    // XSS 过滤（在所有库注入后最后一次拦截）
+    try { xssFilter(); } catch (e) { console.warn('[xss]', e); }
+
+    // 并行加载所有图表类（互不依赖）
+    Promise.allSettled([
+      renderMermaid(),
+      renderGraphviz(),
+      renderECharts(),
+      renderAbc()
+    ]).then(function () {
+      // MathJax 兜底在 KaTeX 后约 1.2s 判断是否触发
+      try { tryMathJaxFallback(); } catch (e) { console.warn('[math-mb]', e); }
+    });
+  });
+})();
+</script>
+
+{{- /* 2b. KaTeX JS + mhchem extension + 自定义渲染器（在图表逻辑前注入，保证 DOM 先有公式元素）
+         math-render.js 扫描 $...$ / $$...$$ / \[...\] / \(...\) 并用 KaTeX 渲染。 */ -}}
 <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"
   integrity="sha384-7zkQWkzuo3B5mTepMUcHkMB5jZaolc2xDwL6VFqjFALcbeS9Ggm/Yr2r3Dy4lfFg" crossorigin="anonymous"></script>
 <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/mhchem.min.js"

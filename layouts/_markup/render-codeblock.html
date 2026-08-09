@@ -1,0 +1,88 @@
+{{- /* =====================================================================
+   Hugo Goldmark 代码块渲染钩子（优先级高于 Chroma highlight）。
+   只处理 4 种图表语言：mermaid、graphviz、echarts、abc（五线谱 abc.js）
+   其他语言（bash/toml/python 等）全部 fall through 到 Chroma 内置 highlight。
+   输出约定：
+     <pre class="language-mermaid"><code>...</code></pre>
+     <pre class="language-graphviz" data-layout="dot" data-engine="dot"><code>...</code></pre>
+     <pre class="language-echarts" data-chart="line|pie|mindmap|..."><code>{...}</code></pre>
+     <pre class="language-abc" data-score="1"><code>X:1 ...</code></pre>
+   然后由 extend_footer 内的 JS 在前端用对应的库把 <code> 文本替换成 SVG/Canvas。
+   这样做的好处：构建不依赖 Node/Python/Graphviz，完全在用户浏览器渲染。
+   ===================================================================== */ -}}
+{{- $lang := .Type | default "text" }}
+{{- $langLower := lower $lang }}
+
+{{- /* ===== 图表类：直接输出 pre>code，不做语法高亮 ===== */ -}}
+{{- if or (eq $langLower "mermaid")
+        (eq $langLower "graphviz") (eq $langLower "dot") (eq $langLower "gv")
+        (eq $langLower "echarts")
+        (eq $langLower "abc") (eq $langLower "abcjs") }}
+
+{{- /* 代码块属性（info string 后缀）：
+     例：```echarts line    → data-chart="line"
+         ```graphviz neato  → data-engine="neato"
+         ```mermaid        → 默认无
+         ```abc transpose=1 → data-transpose="1"
+*/ -}}
+{{- $attrs := .Attributes | default dict }}
+{{- $options := .Options | default slice }}
+{{- $infoTail := "" }}
+{{- range $i, $tok := $options }}
+  {{- if gt $i 0 }}{{ $infoTail = printf "%s %s" $infoTail $tok }}{{ else }}{{ $infoTail = $tok }}{{ end }}
+{{- end }}
+
+{{- /* 规范化语言名，便于前端 JS 统一判断 class */ -}}
+{{- $cls := "" }}
+{{- $extraAttrs := slice }}
+{{- if eq $langLower "mermaid" }}
+  {{- $cls = "language-mermaid" }}
+{{- else if or (eq $langLower "graphviz") (eq $langLower "dot") (eq $langLower "gv") }}
+  {{- $cls = "language-graphviz" }}
+  {{- /* 默认 engine=dot；可通过 info string 第一个 token 切换 neato/twopi/fdp/sfdp/circo */ -}}
+  {{- $engine := "dot" }}
+  {{- if $infoTail }}
+    {{- $engines := slice "dot" "neato" "twopi" "fdp" "sfdp" "circo" "osage" "patchwork" }}
+    {{- if in $engines (lower $infoTail) }}{{ $engine = lower $infoTail }}{{ end }}
+  {{- end }}
+  {{- if isset $attrs "engine" }}{{ $engine = $attrs.engine }}{{ end }}
+  {{- $extraAttrs = $extraAttrs | append (printf `data-engine="%s"` $engine) }}
+{{- else if eq $langLower "echarts" }}
+  {{- $cls = "language-echarts" }}
+  {{- /* data-chart: 可选 line / pie / mindmap / bar / scatter / radar 等 */ -}}
+  {{- $chart := $infoTail | default "custom" }}
+  {{- if isset $attrs "chart" }}{{ $chart = $attrs.chart }}{{ end }}
+  {{- $extraAttrs = $extraAttrs | append (printf `data-chart="%s"` $chart) }}
+  {{- if isset $attrs "height" }}{{ $extraAttrs = $extraAttrs | append (printf `data-height="%s"` $attrs.height) }}{{ end }}
+  {{- if isset $attrs "width" }}{{ $extraAttrs = $extraAttrs | append (printf `data-width="%s"` $attrs.width) }}{{ end }}
+{{- else if or (eq $langLower "abc") (eq $langLower "abcjs") }}
+  {{- $cls = "language-abc" }}
+  {{- if isset $attrs "transpose" }}{{ $extraAttrs = $extraAttrs | append (printf `data-transpose="%s"` $attrs.transpose) }}{{ end }}
+  {{- if isset $attrs "staffwidth" }}{{ $extraAttrs = $extraAttrs | append (printf `data-staffwidth="%s"` $attrs.staffwidth) }}{{ end }}
+{{- end }}
+
+{{- /* 拼装最终 class + data attrs 字符串 */ -}}
+{{- $attrStr := printf `class="%s"` $cls }}
+{{- range $a := $extraAttrs }}
+  {{- $attrStr = printf "%s %s" $attrStr $a }}
+{{- end }}
+
+<pre {{ $attrStr | safeHTMLAttr }}><code class="{{ $cls }}">{{ .Inner }}</code></pre>
+
+{{- else }}
+{{- /* ===== 非图表语言：fallback 回 Hugo Chroma 内置高亮化（等效于没有这个钩子） =====
+        Hugo 原生会调用 Chroma 把 .Inner 语法高亮成带 class 的 <pre class="highlight">。
+        这里显式调用 highlight 函数，确保与 fallback 行为一致。 */ -}}
+{{- $hlOpts := .Options | default slice }}
+{{- $optStr := "" }}
+{{- range $i, $tok := $hlOpts }}
+  {{- if gt $i 0 }}{{ $optStr = printf "%s,%s" $optStr $tok }}{{ else }}{{ $optStr = $tok }}{{ end }}
+{{- end }}
+{{- /* 没有 info 时给个空字符串，Chroma 会按 markup.highlight.guessSyntax 判断 */ -}}
+{{- $optStr = $optStr | default "" }}
+{{- with transform.HighlightCodeBlock . $optStr }}
+  {{- .Wrapped | safeHTML }}
+{{- else }}
+  {{- .Inner | safeHTML }}
+{{- end }}
+{{- end }}
