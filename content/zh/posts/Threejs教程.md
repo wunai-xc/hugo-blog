@@ -98,7 +98,7 @@ npm install three
 ## 第二步： 清理工程
 Vite 默认生成的模板包含一些示例代码， 我们需要清理一下， 只保留最基础的结构。
 
-1、 打开 index.html， 将div #app改为div #webgl， 它将作为我们 canvas 的容器：
+1、 打开 index.html， 将 <div #app>改为 <div #webgl>， 它将作为我们 <canvas>的容器：
 
 ```html
 <!doctype html>
@@ -181,4 +181,4 @@ function animate() {
 animate();
 
 ```
-行 npm run dev，打开浏览器，你应该能看到一个正在旋转的绿色立方体了！
+行 <npm run dev>，打开浏览器，你应该能看到一个正在旋转的绿色立方体了！
