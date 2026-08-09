@@ -76,7 +76,7 @@ WARNING
 
 打开终端（命令行），运行以下命令来创建一个纯净的 JavaScript 项目：
 
-´´´bash
+```bash
 # 创建项目文件夹并进入
 mkdir three - app
 
@@ -91,7 +91,7 @@ npm install
 
 # 安装 Three.js 核心库
 npm install three
-´´´
+```
 
 ---
 
@@ -100,7 +100,7 @@ Vite 默认生成的模板包含一些示例代码， 我们需要清理一下�
 
 1、 打开 index.html， 将div #app改为div #webgl， 它将作为我们 canvas 的容器：
 
-'''html
+```html
 <!doctype html>
 <html lang="en">
   <head>
@@ -114,11 +114,11 @@ Vite 默认生成的模板包含一些示例代码， 我们需要清理一下�
   </body>
 </html>
 
-'''
+```
 
 2、打开 src/style.css，清空内容，只写入最基础的重置样式：
 
-'''css
+```css
 html,
 body,
 #webgl {
@@ -128,7 +128,7 @@ body,
   padding: 0;
   overflow: hidden;
 }
-'''
+```
 
 3、清空 src/main.ts 中的内容，注意保留import './style.css'。
 
@@ -138,7 +138,7 @@ body,
 ## 第三步：编写代码 Hello Cube
 现在，我们在 src/main.js 中编写Three.js代码，实现一个自动旋转的立方体。
 
-'''javascript
+```javascript
 import "./style.css";
 import * as THREE from "three";
 import { OrbitControls } from "three/addons/controls/OrbitControls.js";
@@ -180,5 +180,5 @@ function animate() {
 
 animate();
 
-'''
+```
 行 npm run dev，打开浏览器，你应该能看到一个正在旋转的绿色立方体了！
