@@ -55,8 +55,7 @@ Three.js的出现继承并扩展了WebGL的优点：
 
 ---
 ## Three.js结合Vite开发第一个场景
-上节我们对Three.sj的概念有了基本的了解，本节通过实际代码，初体验Three.js的开发过程。在现代 Web 开发中，我们不再推荐直接在 HTML 中引入<script>
-标签，而是使用更高效的构建工具。本节我们将使用 [Vite](https://cn.vite.dev/guide/)
+上节我们对Three.js的概念有了基本的了解，本节通过实际代码，初体验Three.js的开发过程。在现代 Web 开发中，我们不再推荐直接在 HTML 中引入 `<script>` 标签，而是使用更高效的构建工具。本节我们将使用 [Vite](https://cn.vite.dev/guide/)
 —— 目前前端界最快、最轻量的构建工具。
 
 ---
