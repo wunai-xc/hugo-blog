@@ -98,7 +98,7 @@ npm install three
 ## 第二步： 清理工程
 Vite 默认生成的模板包含一些示例代码， 我们需要清理一下， 只保留最基础的结构。
 
-1、 打开 index.html， 将 <div #app>改为 <div #webgl>， 它将作为我们 <canvas>的容器：
+1、 打开 index.html， 将 `<div #app>`改为 `<div #webgl>`， 它将作为我们 `<canvas>`的容器：
 
 ```html
 <!doctype html>
@@ -116,7 +116,7 @@ Vite 默认生成的模板包含一些示例代码， 我们需要清理一下�
 
 ```
 
-2、打开 src/style.css，清空内容，只写入最基础的重置样式：
+2、打开 `src/style.css`，清空内容，只写入最基础的重置样式：
 
 ```css
 html,
@@ -130,13 +130,13 @@ body,
 }
 ```
 
-3、清空 src/main.ts 中的内容，注意保留import './style.css'。
+3、清空 `src/main.ts` 中的内容，注意保留`import './style.css'`。
 
-4、删除src/counter.js文件。
+4、删除`src/counter.js`文件。
 
 ---
 ## 第三步：编写代码 Hello Cube
-现在，我们在 src/main.js 中编写Three.js代码，实现一个自动旋转的立方体。
+现在，我们在 `src/main.js` 中编写`Three.js`代码，实现一个自动旋转的立方体。
 
 ```javascript
 import "./style.css";
