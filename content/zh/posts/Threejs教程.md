@@ -21,6 +21,7 @@ summary = '本文摘要自Threejs官网教程'
 - **跨平台**： 只要浏览器支持 WebGL（现代浏览器如 Chrome, Edge, Safari 均支持），3D应用就能在手机、平板和电脑上运行。
 
 同时，因为WebGL的语法非常复杂，直接使用原生WebGL开发极其痛苦。开发者需要编写大量的GLSL（着色器语言）代码，手动管理缓冲区、矩阵变换和复杂的数学运算。即便只是在屏幕上画一个红色的三角形，可能也需要编写上百行代码。为了简化WebGL的开发，Three.js应运而生。
+
 ---
 ## 什么是 Three.js
 **Three.js** 是由 Ricardo Cabello（网名 Mr.doob）发起的开源轻量级3D库。核心目标是：**让在浏览器中创建 3D 内容变得简单**， 官方网址：https://threejs.org。
