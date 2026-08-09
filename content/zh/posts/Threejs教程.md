@@ -74,7 +74,7 @@ WARNING
 首先，确保你的电脑上安装了 [Node.js](https://nodejs.org/)
 ，版本视当前所用的Vite决定。
 
-打开终端（命令行），运行以下命令来创建一个纯净的 JavaScript 项目：
+打开终端（命令行），运行以下命令来创建一个纯净的 `JavaScript` 项目：
 
 ```bash
 # 创建项目文件夹并进入
@@ -181,4 +181,4 @@ function animate() {
 animate();
 
 ```
-行 <npm run dev>，打开浏览器，你应该能看到一个正在旋转的绿色立方体了！
+运行 `<npm run dev>`，打开浏览器，你应该能看到一个正在旋转的绿色立方体了！
