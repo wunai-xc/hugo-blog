@@ -1,3 +1,12 @@
++++
+title = 'Claude'
+date = 2026-08-10
+draft = false
+tags = ["Claude", "AI"，"官方文档"]
+categories = ["AI"]
+summary = '一句话摘要，显示在文章列表'
++++
+
 # 付费 Claude 计划的上下文窗口有多大？
 
 Claude Sonnet 5 在所有付费计划中与 Claude 聊天时支持 1M 令牌上下文窗口。Claude Opus 4.8、Opus 4.7、Opus 4.6 和 Sonnet 4.6 在所有付费计划中与 Claude 聊天时支持 500K 令牌上下文窗口。除了这些模型外，Claude 的上下文窗口大小为 200K，这意味着在使用付费 Claude 计划时，它可以摄取 200K+ 令牌（约 500 页或更多文本）。
