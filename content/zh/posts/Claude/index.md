@@ -4,7 +4,7 @@ date = 2026-08-10
 draft = false
 tags = ["Claude", "AI"，"官方文档"]
 categories = ["AI"]
-summary = '一句话摘要，显示在文章列表'
+summary = '来自官方的文档，markdown格式'
 +++
 
 # 付费 Claude 计划的上下文窗口有多大？
