@@ -163,12 +163,6 @@ summaryLength = 30
       weight = 50
 
     [[languages.zh.menu.main]]
-      identifier = "editor"
-      name = "写作"
-      url = "/zh/editor/"
-      weight = 55
-
-    [[languages.zh.menu.main]]
       identifier = "dcmc"
       name = "DMCC"
       url = "https://dmcc.wunai.top/"
@@ -217,12 +211,6 @@ summaryLength = 30
       name = "Archives"
       url = "/en/archives/"
       weight = 50
-
-    [[languages.en.menu.main]]
-      identifier = "editor"
-      name = "Editor"
-      url = "/en/editor/"
-      weight = 55
 
     [[languages.en.menu.main]]
       identifier = "dcmc"
