@@ -1,0 +1,49 @@
+{{- /* =====================================================================
+  Goldmark image render hook — Leaf Bundle 兼容版
+  目标：无论页面是「单文件 .md」还是「文件夹/index.md 的 Leaf Bundle」，
+  同一种 Markdown 写法（![](xxx.png) 或 ![](./xxx.png)）都能正确解析、
+  且图片被 Hugo 发布到对应页面 URL 下。
+
+  解析优先级：
+    1. 绝对 URL（http(s):// 或 // 开头）→ 原样返回，外加 loading="lazy" 与基本安全属性
+    2. data: / blob: 内联 → 原样返回
+    3. 以 "/" 开头的站内绝对路径 → 直接 relURL 拼接
+    4. 相对路径（含 ./ 开头 或 非/开头）：
+         - 若当前页是 Leaf Bundle（index.md）→ 用 .Page.Resources.GetMatch 匹配同目录资源
+           命中则走 .RelPermalink（资源随页面一起 fingerprint，避免缓存脏读）
+         - 否则 → 按普通相对路径拼到 .Page.RelPermalink 之后
+           （单 md 文件场景下，Hugo 生成的最终 URL 形如 /posts/xxx/，
+            同时 static/ 里的同名相对文件会被原样 copy 到 public 根，用户也
+            可以把图片扔到 /static/xxx/xxx.png 然后这里 fallback 到 relURL）
+  ===================================================================== */ -}}
+{{- $dest := .Destination | safeURL }}
+{{- $text := .Text }}
+{{- $title := .Title }}
+{{- $isAbs := or (hasPrefix $dest "http://") (hasPrefix $dest "https://") (hasPrefix $dest "//") }}
+{{- $isInline := or (hasPrefix $dest "data:") (hasPrefix $dest "blob:") }}
+
+{{- if or $isAbs $isInline }}
+  {{- /* 外链/内联：直接输出 */ -}}
+  <img src="{{ $dest }}" alt="{{ $text | plainify }}"{{ with $title }} title="{{ . | plainify }}"{{ end }} loading="lazy" referrerpolicy="no-referrer" decoding="async">
+{{- else if hasPrefix $dest "/" }}
+  {{- /* 站内绝对路径（/images/xxx.png）→ 走 relURL */ -}}
+  <img src="{{ $dest | relURL }}" alt="{{ $text | plainify }}"{{ with $title }} title="{{ . | plainify }}"{{ end }} loading="lazy" decoding="async">
+{{- else }}
+  {{- /* 相对路径：先尝试 Page Resources（Leaf Bundle），否则 fallback 到 Page.RelPermalink */ -}}
+  {{- $res := .Page.Resources.GetMatch (printf "%s" $dest) }}
+  {{- if $res }}
+    {{- /* 命中资源（同目录下的图片）：用资源 RelPermalink，打包到最终页面目录里 */ -}}
+    <img src="{{ $res.RelPermalink }}" alt="{{ $text | plainify }}"{{ with $title }} title="{{ . | plainify }}"{{ end }} loading="lazy" decoding="async" width="{{ $res.Width }}" height="{{ $res.Height }}">
+  {{- else }}
+    {{- /* 没命中（单 md 文件，图片放在 static 或外部 static 子目录）：
+           正常相对路径写法 —— 把它拼到当前页 RelPermalink 之后再 relURL。
+           Hugo 对单 md 生成的最终 URL 为 /posts/xxx/，
+           所以 ![](./pic.png) 会解析成 /posts/xxx/pic.png，
+           如果 pic.png 放在 static/posts/xxx/ 下则会被正确发布。*/ -}}
+    {{- /* 消除 ./ 前缀（如果存在），再拼接 */ -}}
+    {{- $clean := $dest }}
+    {{- if hasPrefix $clean "./" }}{{ $clean = substr $clean 2 }}{{ end }}
+    {{- $final := printf "%s%s" .Page.RelPermalink $clean | relURL }}
+    <img src="{{ $final }}" alt="{{ $text | plainify }}"{{ with $title }} title="{{ . | plainify }}"{{ end }} loading="lazy" decoding="async">
+  {{- end }}
+{{- end }}

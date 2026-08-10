@@ -1,0 +1,61 @@
+{{- /* =====================================================================
+  Goldmark link render hook — Leaf Bundle 兼容版
+  处理 Markdown 里的 [text](./xxx.md) 或 [text](../other-slug/) 这类相对链接：
+    - 若链接目标是同 bundle 或 sibling bundle 的 .md 文件 → 解析成目标页 Permalink
+    - 其它相对 URL（html / 非 md）→ 拼到当前页面 RelPermalink 下，保持正常相对路径语义
+    - 外链 / // /data: /blob: 原样输出
+  注：对于 bundle 与 单 md 混用的站点，Hugo 对相对路径在 md 文件里不会自动
+  解析为对应 Page，所以需要 hook 手动做 Page lookup。
+  ===================================================================== */ -}}
+{{- $dest := .Destination | safeURL }}
+{{- $text := .Text }}
+{{- $title := .Title }}
+{{- $isAbs := or (hasPrefix $dest "http://") (hasPrefix $dest "https://") (hasPrefix $dest "//") }}
+{{- $isInline := or (hasPrefix $dest "data:") (hasPrefix $dest "blob:") }}
+{{- $isAnchor := hasPrefix $dest "#" }}
+
+{{- if or $isAbs $isInline }}
+  <a href="{{ $dest }}"{{ with $title }} title="{{ . | plainify }}"{{ end }} rel="noopener noreferrer" target="_blank">{{ $text | safeHTML }}</a>
+{{- else if $isAnchor }}
+  <a href="{{ $dest }}"{{ with $title }} title="{{ . | plainify }}"{{ end }}>{{ $text | safeHTML }}</a>
+{{- else if hasPrefix $dest "/" }}
+  <a href="{{ $dest | relURL }}"{{ with $title }} title="{{ . | plainify }}"{{ end }}>{{ $text | safeHTML }}</a>
+{{- else }}
+  {{- /* 相对路径：如果目标是以 .md 结尾，尝试在 site pages 里找到对应 page */ -}}
+  {{- $final := $dest }}
+  {{- $mdTarget := strings.HasSuffix (strings.ToLower $dest) ".md" }}
+  {{- if $mdTarget }}
+    {{- /* 消除 ./#anchor 锚点 */ -}}
+    {{- $only := $dest }}
+    {{- $anchor := "" }}
+    {{- if in $dest "#" }}
+      {{- $parts := split $dest "#" }}
+      {{- $only = index $parts 0 }}
+      {{- $anchor = printf "#%s" (index $parts 1) }}
+    {{- end }}
+    {{- /* 基于当前 Page 目录做 path 解析 */ -}}
+    {{- $curDir := path.Dir .Page.File.Path }}
+    {{- /* 如果是 Leaf Bundle，File.Path 是 xxx/index.md，curDir 就是 xxx/ */ -}}
+    {{- $resolved := path.Join $curDir $only }}
+    {{- /* 在 site 所有 pages 里按 File.Path 精确匹配 */ -}}
+    {{- $matched := false }}
+    {{- range where site.RegularPages "File" "!=" nil }}
+      {{- if eq (path.Clean .File.Path) (path.Clean $resolved) }}
+        {{- $final = printf "%s%s" .RelPermalink $anchor }}
+        {{- $matched = true }}
+      {{- end }}
+    {{- end }}
+    {{- if not $matched }}
+      {{- /* 没匹配到 md page：仍按相对路径拼，交给用户 static 目录 */ -}}
+      {{- $clean := $dest }}
+      {{- if hasPrefix $clean "./" }}{{ $clean = substr $clean 2 }}{{ end }}
+      {{- $final = printf "%s%s" .Page.RelPermalink $clean | relURL }}
+    {{- end }}
+  {{- else }}
+    {{- /* 非 md 结尾的相对 URL：正常拼接（可能是 bundle 里的附件 pdf 等，或外部 static）*/ -}}
+    {{- $clean := $dest }}
+    {{- if hasPrefix $clean "./" }}{{ $clean = substr $clean 2 }}{{ end }}
+    {{- $final = printf "%s%s" .Page.RelPermalink $clean | relURL }}
+  {{- end }}
+  <a href="{{ $final }}"{{ with $title }} title="{{ . | plainify }}"{{ end }}>{{ $text | safeHTML }}</a>
+{{- end }}
