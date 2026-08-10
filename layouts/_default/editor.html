@@ -24,11 +24,6 @@
         <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 10h1a3 3 0 010 6h-1M6 10H5a3 3 0 000 6h1M8 10v6M14 10v6M6 6h12v14a2 2 0 01-2 2H8a2 2 0 01-2-2V6z"/></svg>
         <span>{{ if $isEn }}Sync↓{{ else }}云恢复{{ end }}</span>
       </button>
-      <span class="ed-tool-sep" style="width:1px;height:20px;background:var(--border,#e5e7eb);margin:0 6px;"></span>
-      <button class="ed-btn" id="ed-publish" title="Publish to blog repo" style="background:var(--link-background,#3b82f6);color:#fff;font-weight:600">
-        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 2L11 13"/><path d="M22 2l-7 20-4-9-9-4 20-7z"/></svg>
-        <span>{{ if $isEn }}Publish{{ else }}发布{{ end }}</span>
-      </button>
     </div>
     <div class="editor-bar-right">
       <span class="ed-status" id="ed-status">{{ if $isEn }}Ready{{ else }}就绪{{ end }}</span>
@@ -107,16 +102,8 @@
       </div>
       <div class="ed-modal-body">
         <label class="ed-setting-row">
-          <span class="ed-setting-label">GitHub Token (Gist)<br><small>{{ if $isEn }}Only gist scope needed{{ else }}仅需 gist 权限{{ end }}</small></span>
+          <span class="ed-setting-label">GitHub Token<br><small>{{ if $isEn }}Scoped to gist only{{ else }}仅需 gist 权限{{ end }}</small></span>
           <input type="password" id="ed-gist-token" placeholder="ghp_..." autocomplete="off">
-        </label>
-        <label class="ed-setting-row">
-          <span class="ed-setting-label">GitHub Token (Push)<br><small>Fine-grained: Contents+PRs</small></span>
-          <input type="password" id="ed-push-token" placeholder="github_pat_..." autocomplete="off">
-        </label>
-        <label class="ed-setting-row">
-          <span class="ed-setting-label">{{ if $isEn }}Repo{{ else }}博客仓库{{ end }}<br><small>owner/repo</small></span>
-          <input type="text" id="ed-push-repo" value="wunai-xc/hugo-blog" autocomplete="off">
         </label>
         <label class="ed-setting-row">
           <span class="ed-setting-label">Gist ID<br><small>{{ if $isEn }}Leave empty to auto-create{{ else }}留空则自动创建{{ end }}</small></span>
@@ -138,106 +125,6 @@
       <div class="ed-modal-footer">
         <button class="ed-btn" id="ed-settings-save">{{ if $isEn }}Save{{ else }}保存{{ end }}</button>
         <button class="ed-btn ed-btn-danger" id="ed-clear-all">{{ if $isEn }}Clear all drafts{{ else }}清空全部草稿{{ end }}</button>
-      </div>
-    </div>
-  </div>
-
-  <!-- 发布模态框 -->
-  <div class="ed-modal-overlay" id="ed-publish-modal" style="display:none">
-    <div class="ed-modal" style="max-width:680px">
-      <div class="ed-modal-header">
-        <h3>{{ if $isEn }}Publish to blog repo{{ else }}发布到博客仓库{{ end }}</h3>
-        <button class="ed-modal-close" id="ed-publish-close">✕</button>
-      </div>
-      <div class="ed-modal-body">
-        <div class="ed-publish-warn" id="ed-publish-warn" style="display:none;margin-bottom:14px;padding:10px 14px;border-radius:8px;background:rgba(239,68,68,.1);color:#b91c1c;font-size:13px;border-left:3px solid #ef4444;"></div>
-
-        <label class="ed-setting-row">
-          <span class="ed-setting-label">{{ if $isEn }}Title{{ else }}标题{{ end }}<br><small></small></span>
-          <input type="text" id="ed-fm-title" autocomplete="off">
-        </label>
-
-        <label class="ed-setting-row">
-          <span class="ed-setting-label">{{ if $isEn }}Filename slug{{ else }}文件名{{ end }}<br><small>.md 后缀自动加</small></span>
-          <input type="text" id="ed-fm-slug" placeholder="例如：写作进阶-2" autocomplete="off">
-        </label>
-
-        <label class="ed-setting-row">
-          <span class="ed-setting-label">{{ if $isEn }}Lang dir{{ else }}语言目录{{ end }}</span>
-          <select id="ed-fm-langdir">
-            <option value="content/zh/posts/">content/zh/posts/ (中文)</option>
-            <option value="content/en/posts/">content/en/posts/ (English)</option>
-          </select>
-        </label>
-
-        <label class="ed-setting-row">
-          <span class="ed-setting-label">{{ if $isEn }}Author{{ else }}作者{{ end }}</span>
-          <input type="text" id="ed-fm-author" placeholder="留空不写 author 字段; 填 AI 会被标记" autocomplete="off">
-        </label>
-
-        <label class="ed-setting-row">
-          <span class="ed-setting-label">{{ if $isEn }}Tags{{ else }}标签{{ end }}<br><small>英文逗号分隔</small></span>
-          <input type="text" id="ed-fm-tags" placeholder="计算机, 教程" autocomplete="off">
-        </label>
-
-        <label class="ed-setting-row">
-          <span class="ed-setting-label">{{ if $isEn }}Categories{{ else }}分类{{ end }}<br><small>英文逗号分隔</small></span>
-          <input type="text" id="ed-fm-cats" placeholder="笔记" autocomplete="off">
-        </label>
-
-        <label class="ed-setting-row">
-          <span class="ed-setting-label">{{ if $isEn }}Date{{ else }}发布日期{{ end }}</span>
-          <input type="date" id="ed-fm-date" autocomplete="off">
-        </label>
-
-        <div class="ed-setting-row">
-          <span class="ed-setting-label">{{ if $isEn }}Draft{{ else }}草稿模式{{ end }}<br><small>draft=true 不发布</small></span>
-          <label class="ed-switch"><input type="checkbox" id="ed-fm-draft" checked><span class="ed-switch-slider"></span></label>
-        </div>
-
-        <div class="ed-setting-row" style="align-items:center">
-          <span class="ed-setting-label">{{ if $isEn }}Frontmatter来源{{ else }}Frontmatter 来源{{ end }}</span>
-          <div style="font-size:13px;color:var(--secondary,#6b7280);line-height:1.6;flex:1" id="ed-fm-source-hint"></div>
-        </div>
-
-        <label class="ed-setting-row">
-          <span class="ed-setting-label">{{ if $isEn }}Summary{{ else }}摘要{{ end }}<br><small>可选</small></span>
-          <input type="text" id="ed-fm-summary" placeholder="一句话描述（可选）" autocomplete="off">
-        </label>
-
-        <details class="ed-preview-details" style="margin-top:6px;padding:8px 12px;border:1px solid var(--border,#e5e7eb);border-radius:8px;background:var(--entry,#f6f6f7);">
-          <summary style="cursor:pointer;font-size:13px;font-weight:600;color:var(--primary,#1f2937);">{{ if $isEn }}Preview full file content{{ else }}预览完整文件内容{{ end }}</summary>
-          <pre id="ed-fm-preview" style="margin-top:10px;padding:12px;background:var(--background,#fff);border-radius:6px;white-space:pre-wrap;word-break:break-word;font-size:12px;max-height:260px;overflow-y:auto;border:1px dashed var(--border,#e5e7eb);"></pre>
-        </details>
-      </div>
-
-      <div class="ed-modal-footer" style="flex-direction:column;gap:8px;align-items:stretch">
-        <div style="display:flex;gap:8px;justify-content:space-between">
-          <button class="ed-btn ed-btn-danger" id="ed-publish-cancel">{{ if $isEn }}Cancel{{ else }}取消{{ end }}</button>
-          <div style="display:flex;gap:8px">
-            <button class="ed-btn" id="ed-publish-pr" title="提交到 draft 分支并开 PR 供审阅合并">
-              {{ if $isEn }}Open PR (review){{ else }}开 PR (审阅合并){{ end }}
-            </button>
-            <button class="ed-btn" id="ed-push-main" title="直接推送 main，立即触发 Actions 构建上线" style="background:var(--link-background,#3b82f6);color:#fff;font-weight:600">
-              {{ if $isEn }}→ Push main (direct){{ else }}→ 直推 main (立即上线){{ end }}
-            </button>
-          </div>
-        </div>
-        <div class="ed-publish-progress" id="ed-publish-progress" style="display:none;padding:10px 14px;border-radius:6px;background:var(--entry,#f6f6f7);font-size:12px;color:var(--secondary,#6b7280);"></div>
-      </div>
-    </div>
-  </div>
-
-  <!-- 发布结果模态框 -->
-  <div class="ed-modal-overlay" id="ed-publish-result-modal" style="display:none">
-    <div class="ed-modal">
-      <div class="ed-modal-header">
-        <h3 id="ed-result-title">Result</h3>
-        <button class="ed-modal-close" id="ed-result-close">✕</button>
-      </div>
-      <div class="ed-modal-body" id="ed-result-body" style="font-size:14px;line-height:1.7;"></div>
-      <div class="ed-modal-footer">
-        <button class="ed-btn" id="ed-result-ok">OK</button>
       </div>
     </div>
   </div>
