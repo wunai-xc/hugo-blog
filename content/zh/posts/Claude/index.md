@@ -2,7 +2,7 @@
 title = 'Claude'
 date = 2026-08-10
 draft = false
-tags = ["Claude", "AI"，"官方文档"]
+tags = ["Claude", "AI", "官方文档"]
 categories = ["AI"]
 summary = '来自官方的文档，markdown格式'
 +++
