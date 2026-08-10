@@ -7,7 +7,7 @@ categories = ["指令"]
 summary = '本文列举了GitHub常用指令并以代码块的形式方便复制'
 +++
 
-![]()
+![GitHub速查表](https://www.runoob.com/wp-content/uploads/2015/02/011500266295799.jpg)
 
 ```
 git init                                                  # 初始化本地git仓库（创建新仓库）
