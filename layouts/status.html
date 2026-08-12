@@ -52,9 +52,6 @@
           <span class="status-label">{{- if $isZh }}完成时间{{- else }}Finished{{- end }}</span>
           <span class="status-value status-finished">—</span>
         </div>
-        <a class="status-link status-gh-link" href="#" target="_blank" rel="noopener" style="display:none">
-          {{- if $isZh }}查看 GitHub 运行 →{{- else }}View GitHub run →{{- end }}
-        </a>
       </div>
     </div>
 
@@ -86,9 +83,6 @@
           <span class="status-label">{{- if $isZh }}部署时间{{- else }}Deployed at{{- end }}</span>
           <span class="status-value status-deployed">—</span>
         </div>
-        <a class="status-link status-cf-link" href="#" target="_blank" rel="noopener" style="display:none">
-          {{- if $isZh }}访问部署 →{{- else }}Open deployment →{{- end }}
-        </a>
       </div>
     </div>
   </div>
@@ -199,14 +193,6 @@
   word-break: break-all;
 }
 .status-timeago { font-weight: 600; }
-.status-link {
-  display: inline-block;
-  margin-top: 10px;
-  font-size: 13px;
-  color: var(--link, #3b82f6);
-  text-decoration: none;
-}
-.status-link:hover { text-decoration: underline; }
 .status-footer {
   margin-top: 12px;
   padding: 10px 0;
@@ -290,11 +276,6 @@
     }
     card.querySelector('.status-event').textContent = gh.event || '—';
     card.querySelector('.status-finished').textContent = fmtDateTime(gh.updated_at);
-    if (gh.html_url) {
-      var link = card.querySelector('.status-gh-link');
-      link.href = gh.html_url;
-      link.style.display = 'inline-block';
-    }
   }
 
   function renderCloudflare(card, cf) {
@@ -316,12 +297,6 @@
       stageEl.textContent = '—';
     }
     card.querySelector('.status-deployed').textContent = fmtDateTime(cf.created_on);
-    if (cf.url) {
-      var link = card.querySelector('.status-cf-link');
-      var url = cf.url.indexOf('http') === 0 ? cf.url : 'https://' + cf.url;
-      link.href = url;
-      link.style.display = 'inline-block';
-    }
   }
 
   function updateTimeAgo() {
