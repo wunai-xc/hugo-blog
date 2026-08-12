@@ -2,6 +2,9 @@
 /public/
 /resources/_generated/
 
+# CI 动态生成的构建状态数据（由 GitHub Actions 写入，不入库）
+/static/build-info.json
+
 # Hugo 临时文件
 .hugo_build.lock
 

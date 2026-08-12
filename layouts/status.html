@@ -1,0 +1,366 @@
+{{- define "main" }}
+
+{{- $isZh := eq .Lang "zh" }}
+
+<header class="page-header">
+  <h1>{{ .Title }}</h1>
+</header>
+
+<div class="post-content">
+  <p class="status-intro">
+    {{- if $isZh }}
+    展示最近一次完成的构建信息（GitHub Actions 触发 Cloudflare Pages 部署）。数据在每次部署时更新，时间差实时计算。
+    {{- else }}
+    Shows the latest completed build (GitHub Actions triggers Cloudflare Pages deployment). Data is updated on each deploy; time diff is calculated in real time.
+    {{- end }}
+  </p>
+
+  <div id="status-loading" class="status-loading">
+    {{- if $isZh }}加载中…{{- else }}Loading…{{- end }}
+  </div>
+
+  <div id="status-cards" class="status-cards" style="display:none">
+    {{- /* GitHub 卡片 */}}
+    <div class="status-card" data-source="github">
+      <div class="status-card-header">
+        <div class="status-card-title">
+          <svg class="status-icon" viewBox="0 0 24 24" width="22" height="22" fill="currentColor">
+            <path d="M12 .297c-6.63 0-12 5.373-12 12 0 5.303 3.438 9.8 8.205 11.385.6.113.82-.258.82-.577 0-.285-.01-1.04-.015-2.04-3.338.724-4.042-1.61-4.042-1.61C4.422 18.07 3.633 17.7 3.633 17.7c-1.087-.744.084-.729.084-.729 1.205.084 1.838 1.236 1.838 1.236 1.07 1.835 2.809 1.305 3.495.998.108-.776.417-1.305.76-1.605-2.665-.3-5.466-1.332-5.466-5.93 0-1.31.465-2.38 1.235-3.22-.135-.303-.54-1.523.105-3.176 0 0 1.005-.322 3.3 1.23.96-.267 1.98-.399 3-.405 1.02.006 2.04.138 3 .405 2.28-1.552 3.285-1.23 3.285-1.23.645 1.653.24 2.873.12 3.176.765.84 1.23 1.91 1.23 3.22 0 4.61-2.805 5.625-5.475 5.92.42.36.81 1.096.81 2.22 0 1.606-.015 2.896-.015 3.286 0 .315.21.69.825.57C20.565 22.092 24 17.592 24 12.297c0-6.627-5.373-12-12-12"/>
+          </svg>
+          <span>GitHub Actions</span>
+        </div>
+        <span class="status-badge" data-status="unknown">—</span>
+      </div>
+      <div class="status-card-body">
+        <div class="status-row">
+          <span class="status-label">{{- if $isZh }}时间差{{- else }}Time ago{{- end }}</span>
+          <span class="status-value status-timeago" data-time="">—</span>
+        </div>
+        <div class="status-row">
+          <span class="status-label">{{- if $isZh }}运行编号{{- else }}Run #{{- end }}</span>
+          <span class="status-value status-runnum">—</span>
+        </div>
+        <div class="status-row">
+          <span class="status-label">{{- if $isZh }}提交{{- else }}Commit{{- end }}</span>
+          <span class="status-value status-commit">—</span>
+        </div>
+        <div class="status-row">
+          <span class="status-label">{{- if $isZh }}触发{{- else }}Event{{- end }}</span>
+          <span class="status-value status-event">—</span>
+        </div>
+        <div class="status-row">
+          <span class="status-label">{{- if $isZh }}完成时间{{- else }}Finished{{- end }}</span>
+          <span class="status-value status-finished">—</span>
+        </div>
+        <a class="status-link status-gh-link" href="#" target="_blank" rel="noopener" style="display:none">
+          {{- if $isZh }}查看 GitHub 运行 →{{- else }}View GitHub run →{{- end }}
+        </a>
+      </div>
+    </div>
+
+    {{- /* Cloudflare 卡片 */}}
+    <div class="status-card" data-source="cloudflare">
+      <div class="status-card-header">
+        <div class="status-card-title">
+          <svg class="status-icon" viewBox="0 0 24 24" width="22" height="22" fill="currentColor">
+            <path d="M16.508 14.114l.57-.024c1.152-.05 2.076-.98 2.076-2.13 0-1.18-.96-2.14-2.14-2.14h-.075c-.118-1.42-1.31-2.54-2.76-2.54h-.094c-.515-1.13-1.65-1.91-2.97-1.91-1.78 0-3.23 1.45-3.23 3.23 0 .16.013.317.038.47C6.293 9.397 5.193 10.59 5.193 12c0 .38.075.74.197 1.07H16.51zM17.998 14.495c-.146.095-.346.155-.55.155H6.786c-.336 0-.66-.114-.897-.324-.25-.224-.39-.527-.39-.85 0-.686.552-1.25 1.274-1.273l1.556.064c.32.013.595-.235.617-.555.022-.32-.235-.595-.555-.617l-1.585-.065c-.097-.005-.193-.012-.288-.012-1.29 0-2.34 1.05-2.34 2.34 0 .62.25 1.21.69 1.65.43.42 1 .65 1.6.65h10.66c.49 0 .96-.17 1.33-.48.36-.3.58-.74.58-1.21v-.01c0-.74-.51-1.36-1.21-1.54.07.21.11.43.11.66 0 .39-.13.75-.34 1.04z"/>
+          </svg>
+          <span>Cloudflare Pages</span>
+        </div>
+        <span class="status-badge" data-status="unknown">—</span>
+      </div>
+      <div class="status-card-body">
+        <div class="status-row">
+          <span class="status-label">{{- if $isZh }}时间差{{- else }}Time ago{{- end }}</span>
+          <span class="status-value status-timeago" data-time="">—</span>
+        </div>
+        <div class="status-row">
+          <span class="status-label">{{- if $isZh }}环境{{- else }}Environment{{- end }}</span>
+          <span class="status-value status-env">—</span>
+        </div>
+        <div class="status-row">
+          <span class="status-label">{{- if $isZh }}阶段{{- else }}Stage{{- end }}</span>
+          <span class="status-value status-stage">—</span>
+        </div>
+        <div class="status-row">
+          <span class="status-label">{{- if $isZh }}部署时间{{- else }}Deployed at{{- end }}</span>
+          <span class="status-value status-deployed">—</span>
+        </div>
+        <a class="status-link status-cf-link" href="#" target="_blank" rel="noopener" style="display:none">
+          {{- if $isZh }}访问部署 →{{- else }}Open deployment →{{- end }}
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <div id="status-error" class="status-error" style="display:none">
+    {{- if $isZh }}
+    无法加载构建信息。可能是首次部署（build-info.json 尚未生成），或请求被拦截。
+    {{- else }}
+    Failed to load build info. This may be the first deploy (build-info.json not yet generated), or the request was blocked.
+    {{- end }}
+  </div>
+
+  <div id="status-footer" class="status-footer" style="display:none">
+    {{- if $isZh }}数据生成于{{- else }}Data generated at{{- end }}
+    <span id="status-generated">—</span>
+  </div>
+</div>
+
+<style>
+.status-intro {
+  color: var(--secondary);
+  font-size: 14px;
+  margin: 0 0 20px;
+  line-height: 1.6;
+}
+.status-loading, .status-error {
+  padding: 32px 16px;
+  text-align: center;
+  color: var(--secondary);
+  font-size: 14px;
+}
+.status-error { color: var(--link, #dc2626); }
+.status-cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 16px;
+  margin-bottom: 16px;
+}
+.status-card {
+  border: 1px solid var(--border, #e5e7eb);
+  border-radius: 12px;
+  overflow: hidden;
+  background: var(--entry, #fff);
+  transition: box-shadow .2s ease, border-color .2s ease;
+}
+.status-card:hover {
+  box-shadow: 0 2px 8px rgba(0,0,0,.08);
+  border-color: var(--link, #3b82f6);
+}
+.status-card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 16px;
+  border-bottom: 1px solid var(--border, #e5e7eb);
+  background: var(--code-bg, rgba(0,0,0,.02));
+}
+.status-card-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 600;
+  font-size: 15px;
+  color: var(--primary, #1f2937);
+}
+.status-icon { color: var(--secondary, #6b7280); }
+.status-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 3px 10px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 1.4;
+}
+.status-badge[data-status="success"] {
+  background: #dcfce7; color: #166534;
+}
+.status-badge[data-status="failure"] {
+  background: #fee2e2; color: #991b1b;
+}
+.status-badge[data-status="cancelled"] {
+  background: #fef9c3; color: #854d0e;
+}
+.status-badge[data-status="unknown"] {
+  background: var(--tertiary, rgba(0,0,0,.06)); color: var(--secondary, #6b7280);
+}
+[data-theme="dark"] .status-badge[data-status="success"] { background: rgba(34,197,94,.18); color: #4ade80; }
+[data-theme="dark"] .status-badge[data-status="failure"] { background: rgba(239,68,68,.18); color: #f87171; }
+[data-theme="dark"] .status-badge[data-status="cancelled"] { background: rgba(234,179,8,.18); color: #facc15; }
+.status-card-body { padding: 12px 16px; }
+.status-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 6px 0;
+  font-size: 13.5px;
+  line-height: 1.5;
+}
+.status-label {
+  color: var(--secondary, #6b7280);
+  flex-shrink: 0;
+}
+.status-value {
+  color: var(--primary, #1f2937);
+  text-align: right;
+  word-break: break-all;
+}
+.status-timeago { font-weight: 600; }
+.status-link {
+  display: inline-block;
+  margin-top: 10px;
+  font-size: 13px;
+  color: var(--link, #3b82f6);
+  text-decoration: none;
+}
+.status-link:hover { text-decoration: underline; }
+.status-footer {
+  margin-top: 12px;
+  padding: 10px 0;
+  border-top: 1px dashed var(--border, #e5e7eb);
+  font-size: 12px;
+  color: var(--secondary, #6b7280);
+}
+</style>
+
+<script>
+(function () {
+  var LANG = {{ .Lang }};
+  var isZh = LANG === 'zh';
+
+  function fmtTimeAgo(dateStr) {
+    if (!dateStr) return '—';
+    var ts = new Date(dateStr).getTime();
+    if (isNaN(ts)) return '—';
+    var diff = Date.now() - ts;
+    if (diff < 0) diff = 0;
+    var sec = Math.floor(diff / 1000);
+    var min = Math.floor(sec / 60);
+    var hr  = Math.floor(min / 60);
+    var day = Math.floor(hr  / 24);
+    if (day > 0) return isZh ? day + ' 天前' : day + ' day' + (day>1?'s':'') + ' ago';
+    if (hr  > 0) return isZh ? hr  + ' 小时前' : hr  + ' hour' + (hr>1?'s':'') + ' ago';
+    if (min > 0) return isZh ? min + ' 分钟前' : min + ' minute' + (min>1?'s':'') + ' ago';
+    return isZh ? sec + ' 秒前' : sec + ' second' + (sec>1?'s':'') + ' ago';
+  }
+
+  function fmtDateTime(dateStr) {
+    if (!dateStr) return '—';
+    var d = new Date(dateStr);
+    if (isNaN(d.getTime())) return dateStr;
+    var pad = function (n) { return n < 10 ? '0' + n : '' + n; };
+    return d.getFullYear() + '-' + pad(d.getMonth()+1) + '-' + pad(d.getDate()) +
+           ' ' + pad(d.getHours()) + ':' + pad(d.getMinutes()) + ':' + pad(d.getSeconds());
+  }
+
+  function ghStatusBadge(conclusion) {
+    if (conclusion === 'success') return { status: 'success', text: isZh ? '成功' : 'Success' };
+    if (conclusion === 'failure') return { status: 'failure', text: isZh ? '失败' : 'Failure' };
+    if (conclusion === 'cancelled') return { status: 'cancelled', text: isZh ? '已取消' : 'Cancelled' };
+    if (conclusion === 'startup_failure') return { status: 'failure', text: isZh ? '启动失败' : 'Startup failure' };
+    return { status: 'unknown', text: conclusion || '—' };
+  }
+
+  function cfStatusBadge(stage) {
+    if (!stage) return { status: 'unknown', text: '—' };
+    var st = stage.status;
+    var name = stage.name || '';
+    if (st === 'success') return { status: 'success', text: isZh ? '成功' : 'Success' };
+    if (st === 'failure') return { status: 'failure', text: isZh ? '失败' : 'Failure' };
+    if (st === 'active' || st === 'queued') return { status: 'cancelled', text: isZh ? '进行中' : 'Active' };
+    return { status: 'unknown', text: st || name || '—' };
+  }
+
+  function shortSha(sha) {
+    if (!sha) return '—';
+    return sha.substring(0, 7);
+  }
+
+  function renderGitHub(card, gh) {
+    if (!gh || !gh.run_id) {
+      card.querySelector('.status-badge').dataset.status = 'unknown';
+      card.querySelector('.status-badge').textContent = isZh ? '无数据' : 'No data';
+      return;
+    }
+    var badge = ghStatusBadge(gh.conclusion);
+    card.querySelector('.status-badge').dataset.status = badge.status;
+    card.querySelector('.status-badge').textContent = badge.text;
+    card.querySelector('.status-timeago').dataset.time = gh.updated_at || '';
+    card.querySelector('.status-timeago').textContent = fmtTimeAgo(gh.updated_at);
+    card.querySelector('.status-runnum').textContent = '#' + (gh.run_number || gh.run_id);
+    var commitEl = card.querySelector('.status-commit');
+    if (gh.commit_message) {
+      commitEl.textContent = shortSha(gh.commit_sha) + ' ' + gh.commit_message;
+      commitEl.title = gh.commit_sha || '';
+    } else {
+      commitEl.textContent = shortSha(gh.commit_sha);
+    }
+    card.querySelector('.status-event').textContent = gh.event || '—';
+    card.querySelector('.status-finished').textContent = fmtDateTime(gh.updated_at);
+    if (gh.html_url) {
+      var link = card.querySelector('.status-gh-link');
+      link.href = gh.html_url;
+      link.style.display = 'inline-block';
+    }
+  }
+
+  function renderCloudflare(card, cf) {
+    if (!cf || !cf.id) {
+      card.querySelector('.status-badge').dataset.status = 'unknown';
+      card.querySelector('.status-badge').textContent = isZh ? '无数据' : 'No data';
+      return;
+    }
+    var badge = cfStatusBadge(cf.latest_stage);
+    card.querySelector('.status-badge').dataset.status = badge.status;
+    card.querySelector('.status-badge').textContent = badge.text;
+    card.querySelector('.status-timeago').dataset.time = cf.created_on || '';
+    card.querySelector('.status-timeago').textContent = fmtTimeAgo(cf.created_on);
+    card.querySelector('.status-env').textContent = cf.environment || '—';
+    var stageEl = card.querySelector('.status-stage');
+    if (cf.latest_stage && cf.latest_stage.name) {
+      stageEl.textContent = cf.latest_stage.name + ' (' + (cf.latest_stage.status || '—') + ')';
+    } else {
+      stageEl.textContent = '—';
+    }
+    card.querySelector('.status-deployed').textContent = fmtDateTime(cf.created_on);
+    if (cf.url) {
+      var link = card.querySelector('.status-cf-link');
+      var url = cf.url.indexOf('http') === 0 ? cf.url : 'https://' + cf.url;
+      link.href = url;
+      link.style.display = 'inline-block';
+    }
+  }
+
+  function updateTimeAgo() {
+    document.querySelectorAll('.status-timeago').forEach(function (el) {
+      var t = el.dataset.time;
+      if (t) el.textContent = fmtTimeAgo(t);
+    });
+  }
+
+  function showError() {
+    document.getElementById('status-loading').style.display = 'none';
+    document.getElementById('status-cards').style.display = 'none';
+    document.getElementById('status-error').style.display = 'block';
+  }
+
+  fetch('{{ "build-info.json" | relURL }}', { cache: 'no-cache' })
+    .then(function (r) {
+      if (!r.ok) throw new Error('HTTP ' + r.status);
+      return r.json();
+    })
+    .then(function (data) {
+      document.getElementById('status-loading').style.display = 'none';
+      document.getElementById('status-cards').style.display = 'grid';
+
+      var cards = document.querySelectorAll('.status-card');
+      renderGitHub(cards[0], data.github);
+      renderCloudflare(cards[1], data.cloudflare);
+
+      var genEl = document.getElementById('status-generated');
+      var footer = document.getElementById('status-footer');
+      if (data.generated_at) {
+        genEl.textContent = fmtDateTime(data.generated_at);
+        footer.style.display = 'block';
+      }
+
+      setInterval(updateTimeAgo, 30000);
+    })
+    .catch(showError);
+})();
+</script>
+
+{{- end }}

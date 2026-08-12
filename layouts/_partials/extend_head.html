@@ -740,8 +740,8 @@
     #toc-toggle,
     .post-meta .edit-post,
     .post-canonical,
-    /* AI 作者徽章（含 wunai / AI 标识）不进入打印 PDF */
-    .post-author-badge {
+    /* AI 生成标识不进入打印 PDF；真实作者（如 wunai）保留显示 */
+    .post-author-badge.is-ai {
       display: none !important;
     }
 

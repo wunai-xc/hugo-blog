@@ -7,6 +7,7 @@ on:
 
 permissions:
   contents: read
+  actions: read
 
 jobs:
   deploy:
@@ -73,6 +74,76 @@ jobs:
             fi
           done
           ls -lh static/images/cell/
+
+      - name: Generate build-info.json
+        # 拉取「上一次」的 GitHub workflow run 和 Cloudflare deployment 信息，
+        # 写入 static/build-info.json 供 /status 页面展示。
+        # 两边都取最新一条（不限成败），语义为「上一次完成的构建」。
+        # 当前正在跑的这次还没完成，所以拿到的就是上一次。
+        env:
+          CF_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CF_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -e
+          mkdir -p static
+          INFO_FILE="static/build-info.json"
+          GENERATED_AT=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
+
+          # ===== GitHub 侧：最近一次 completed 的 workflow run =====
+          GH_DATA='{}'
+          if [ -n "$GH_TOKEN" ]; then
+            GH_RESP=$(curl -fsSL \
+              -H "Authorization: Bearer $GH_TOKEN" \
+              -H "Accept: application/vnd.github+json" \
+              "https://api.github.com/repos/${{ github.repository }}/actions/runs?status=completed&per_page=1" 2>/dev/null || echo '')
+            if [ -n "$GH_RESP" ] && echo "$GH_RESP" | jq -e '.workflow_runs[0]' >/dev/null 2>&1; then
+              GH_DATA=$(echo "$GH_RESP" | jq '.workflow_runs[0] | {
+                run_id: .id,
+                run_number: .run_number,
+                status: .status,
+                conclusion: .conclusion,
+                html_url: .html_url,
+                run_started_at: .run_started_at,
+                updated_at: .updated_at,
+                event: .event,
+                head_branch: .head_branch,
+                commit_sha: .head_sha,
+                commit_message: (.head_commit.message | split("\n")[0]),
+                commit_author: .head_commit.author.name
+              }')
+            fi
+          fi
+
+          # ===== Cloudflare 侧：最新 deployment =====
+          CF_DATA='{}'
+          if [ -n "$CF_API_TOKEN" ] && [ -n "$CF_ACCOUNT_ID" ]; then
+            CF_RESP=$(curl -fsSL \
+              -H "Authorization: Bearer $CF_API_TOKEN" \
+              "https://api.cloudflare.com/client/v4/accounts/$CF_ACCOUNT_ID/pages/projects/hugo-blog-wunai/deployments?per_page=1&sort=created_on%3Adesc" 2>/dev/null || echo '')
+            if [ -n "$CF_RESP" ] && echo "$CF_RESP" | jq -e '.result[0]' >/dev/null 2>&1; then
+              CF_DATA=$(echo "$CF_RESP" | jq '.result[0] | {
+                id: .id,
+                environment: .environment,
+                created_on: .created_on,
+                latest_stage: { name: .latest_stage.name, status: .latest_stage.status },
+                url: .url,
+                aliases: .aliases,
+                is_skipped: .is_skipped
+              }')
+            fi
+          fi
+
+          # ===== 合并写入 =====
+          jq -n \
+            --arg generated_at "$GENERATED_AT" \
+            --argjson github "$GH_DATA" \
+            --argjson cloudflare "$CF_DATA" \
+            '{generated_at: $generated_at, github: $github, cloudflare: $cloudflare}' \
+            > "$INFO_FILE"
+
+          echo "=== build-info.json ==="
+          cat "$INFO_FILE"
 
       - name: Build
         run: |
