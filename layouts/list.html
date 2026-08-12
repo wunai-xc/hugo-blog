@@ -41,8 +41,28 @@
 {{- $pages := union .RegularPages .Sections }}
 
 {{- if .IsHome }}
-{{- $pages = where site.RegularPages "Type" "in" site.Params.mainSections }}
-{{- $pages = where $pages "Params.hiddenInHomeList" "!=" "true"  }}
+{{- $rawPages := where site.RegularPages "Type" "in" site.Params.mainSections }}
+{{- $rawPages = where $rawPages "Params.hiddenInHomeList" "!=" "true" }}
+{{- /* 合集处理：子文章折叠为合集卡片，不单独显示 */}}
+{{- $result := slice }}
+{{- $.Scratch.Set "colSeen" slice }}
+{{- range $rawPages }}
+  {{- if and .Parent (eq .Parent.Params.layout "collection") }}
+    {{- $p := .Parent }}
+    {{- $ppath := $p.File.Path }}
+    {{- $found := false }}
+    {{- range $.Scratch.Get "colSeen" }}
+      {{- if eq . $ppath }}{{ $found = true }}{{ end }}
+    {{- end }}
+    {{- if not $found }}
+      {{- $result = $result | append $p }}
+      {{- $.Scratch.Add "colSeen" (slice $ppath) }}
+    {{- end }}
+  {{- else }}
+    {{- $result = $result | append . }}
+  {{- end }}
+{{- end }}
+{{- $pages = $result }}
 {{- end }}
 
 {{/* === 置顶文章：从列表中抽出，单独渲染为置顶卡片 === */}}
@@ -65,6 +85,33 @@
 
 {{- $term := .Data.Term }}
 {{- range $index, $page := $paginator.Pages }}
+
+{{- if eq $page.Params.layout "collection" }}
+{{- /* === 合集卡片：堆叠效果 === */}}
+<article class="post-entry collection-entry">
+  <span class="cache-dot" data-url="{{ $page.RelPermalink }}" aria-hidden="true"></span>
+  <span class="collection-badge">
+    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+      <path d="M4 20h16a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.93a2 2 0 0 1-1.66-.9l-.82-1.2A2 2 0 0 0 7.93 3H4a2 2 0 0 0-2 2v13c0 1.1.9 2 2 2Z"/>
+    </svg>
+    {{- $count := 0 -}}
+    {{- range $page.RegularPages -}}{{- $count = add $count 1 -}}{{- end -}}
+    {{ $count }}&nbsp;{{ if eq $page.Lang "en" }}articles{{ else }}篇{{ end }}
+  </span>
+  <header class="entry-header">
+    <h2 class="entry-hint-parent">{{ $page.Title }}</h2>
+  </header>
+  {{- if ne ($page.Param "hideSummary") true }}
+  <div class="entry-content">
+    <p>{{ $page.Summary | plainify | htmlUnescape }}</p>
+  </div>
+  {{- end }}
+  <footer class="entry-footer">
+    <span>{{ $page.Date | time.Format "2006年1月2日" }}</span>
+  </footer>
+  <a class="entry-link" aria-label="collection link to {{ $page.Title | plainify }}" href="{{ $page.Permalink }}"></a>
+</article>
+{{- else }}
 
 {{- $class := "post-entry" }}
 
@@ -107,7 +154,8 @@
   {{- end }}
   <a class="entry-link" aria-label="post link to {{ .Title | plainify }}" href="{{ .Permalink }}"></a>
 </article>
-{{- end }}
+{{- end }}{{/* if collection */}}
+{{- end }}{{/* range */}}
 
 {{- if gt $paginator.TotalPages 1 }}
 <footer class="page-footer">
