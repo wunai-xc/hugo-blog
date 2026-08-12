@@ -42,6 +42,7 @@
 
 {{- /* 显式查找合集 section 页面，确保不遗漏 */}}
 {{- $colSections := where (where site.Pages "Kind" "section") "Params.isCollection" true }}
+<!-- DEBUG: colSections={{ len $colSections }} sitePages={{ len site.Pages }} sections={{ len .Sections }} -->
 
 {{- if .IsHome }}
 {{- $rawPages := where site.RegularPages "Type" "in" site.Params.mainSections }}
