@@ -40,29 +40,25 @@
 
 {{- $pages := union .RegularPages .Sections }}
 
+{{- /* 显式查找合集 section 页面，确保不遗漏 */}}
+{{- $colSections := where (where site.Pages "Kind" "section") "Params.isCollection" true }}
+
 {{- if .IsHome }}
 {{- $rawPages := where site.RegularPages "Type" "in" site.Params.mainSections }}
 {{- $rawPages = where $rawPages "Params.hiddenInHomeList" "!=" "true" }}
-{{- /* 合集处理：子文章折叠为合集卡片，不单独显示（用 Scratch 避免模板变量作用域问题） */}}
-{{- $.Scratch.Set "colResult" slice }}
-{{- $.Scratch.Set "colSeen" slice }}
+{{- /* 合集处理：子文章折叠为合集卡片，不单独显示 */}}
+{{- $.Scratch.Set "filtered" slice }}
 {{- range $rawPages }}
   {{- if and .Parent (or (eq .Parent.Params.isCollection true) (eq .Parent.Params.layout "collection")) }}
-    {{- $p := .Parent }}
-    {{- $ppath := $p.File.Path }}
-    {{- $.Scratch.Set "colFound" false }}
-    {{- range $.Scratch.Get "colSeen" }}
-      {{- if eq . $ppath }}{{ $.Scratch.Set "colFound" true }}{{ end }}
-    {{- end }}
-    {{- if not ($.Scratch.Get "colFound") }}
-      {{- $.Scratch.Add "colResult" (slice $p) }}
-      {{- $.Scratch.Add "colSeen" (slice $ppath) }}
-    {{- end }}
+    {{- /* 跳过合集子文章 */}}
   {{- else }}
-    {{- $.Scratch.Add "colResult" (slice .) }}
+    {{- $.Scratch.Add "filtered" (slice .) }}
   {{- end }}
 {{- end }}
-{{- $pages = $.Scratch.Get "colResult" }}
+{{- $pages = union ($.Scratch.Get "filtered") $colSections }}
+{{- else }}
+{{- /* 非首页：确保合集 section 也在列表中 */}}
+{{- $pages = union $pages $colSections }}
 {{- end }}
 
 {{/* === 置顶文章：从列表中抽出，单独渲染为置顶卡片 === */}}
