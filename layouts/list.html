@@ -43,26 +43,26 @@
 {{- if .IsHome }}
 {{- $rawPages := where site.RegularPages "Type" "in" site.Params.mainSections }}
 {{- $rawPages = where $rawPages "Params.hiddenInHomeList" "!=" "true" }}
-{{- /* 合集处理：子文章折叠为合集卡片，不单独显示 */}}
-{{- $result := slice }}
+{{- /* 合集处理：子文章折叠为合集卡片，不单独显示（用 Scratch 避免模板变量作用域问题） */}}
+{{- $.Scratch.Set "colResult" slice }}
 {{- $.Scratch.Set "colSeen" slice }}
 {{- range $rawPages }}
-  {{- if and .Parent (eq .Parent.Params.layout "collection") }}
+  {{- if and .Parent (or (eq .Parent.Params.isCollection true) (eq .Parent.Params.layout "collection")) }}
     {{- $p := .Parent }}
     {{- $ppath := $p.File.Path }}
-    {{- $found := false }}
+    {{- $.Scratch.Set "colFound" false }}
     {{- range $.Scratch.Get "colSeen" }}
-      {{- if eq . $ppath }}{{ $found = true }}{{ end }}
+      {{- if eq . $ppath }}{{ $.Scratch.Set "colFound" true }}{{ end }}
     {{- end }}
-    {{- if not $found }}
-      {{- $result = $result | append $p }}
+    {{- if not ($.Scratch.Get "colFound") }}
+      {{- $.Scratch.Add "colResult" (slice $p) }}
       {{- $.Scratch.Add "colSeen" (slice $ppath) }}
     {{- end }}
   {{- else }}
-    {{- $result = $result | append . }}
+    {{- $.Scratch.Add "colResult" (slice .) }}
   {{- end }}
 {{- end }}
-{{- $pages = $result }}
+{{- $pages = $.Scratch.Get "colResult" }}
 {{- end }}
 
 {{/* === 置顶文章：从列表中抽出，单独渲染为置顶卡片 === */}}
@@ -86,7 +86,7 @@
 {{- $term := .Data.Term }}
 {{- range $index, $page := $paginator.Pages }}
 
-{{- if eq $page.Params.layout "collection" }}
+{{- if or (eq $page.Params.isCollection true) (eq $page.Params.layout "collection") }}
 {{- /* === 合集卡片：堆叠效果 === */}}
 <article class="post-entry collection-entry">
   <span class="cache-dot" data-url="{{ $page.RelPermalink }}" aria-hidden="true"></span>
