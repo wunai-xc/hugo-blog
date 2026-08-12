@@ -4,11 +4,13 @@
 {{- partial "index_profile.html" . }}
 {{- else }} {{/* if not profileMode */}}
 
-{{- if not .IsHome | and .Title }}
+{{- $pageTitle := .Title }}
+{{- if and (eq .Kind "section") (not $pageTitle) }}{{- $pageTitle = path.Base (trim .File.Dir "/") }}{{- end }}
+{{- if not .IsHome | and $pageTitle }}
 <header class="page-header">
   {{- partial "breadcrumbs.html" . }}
   <h1>
-    {{ .Title }}
+    {{ $pageTitle }}
     {{- if and (or (eq .Kind `term`) (eq .Kind `section`)) (.Param "ShowRssButtonInSectionTermList") }}
     {{- with .OutputFormats.Get "rss" }}
     <a href="{{ .RelPermalink }}" title="RSS" aria-label="RSS">
@@ -38,28 +40,46 @@
 </div>
 {{- end }}
 
-{{- $pages := union .RegularPages .Sections }}
+{{/* === 合集自动检测：嵌套 section（父级也是 section）且直属文章 > 1 篇 ===
+     规则：把多篇文章扔进一个文件夹，并放一个空的 _index.md（Hugo 生成列表页的必需标记）。
+     无需在 _index.md 里写任何 front matter —— 标题自动取文件夹名，日期自动取最新文章日期。
+     - 首页：合集子文章折叠为一张堆叠卡片，不单独显示
+     - 列表页：直属合集 section 显示为堆叠卡片
+     - 1 篇文章的文件夹：按普通文章处理，不视为合集 */}}
+{{- $.Scratch.Set "colSections" slice }}
+{{- $.Scratch.Set "colPermalinks" slice }}
+{{- range where site.Pages "Kind" "section" }}
+  {{- if and .Parent (eq .Parent.Kind "section") (gt (len .RegularPages) 1) }}
+    {{- $.Scratch.Add "colSections" (slice .) }}
+    {{- $.Scratch.Add "colPermalinks" (slice .RelPermalink) }}
+  {{- end }}
+{{- end }}
+{{- $colSections := $.Scratch.Get "colSections" }}
+{{- $colPermalinks := $.Scratch.Get "colPermalinks" }}
 
-{{- /* 显式查找合集 section 页面，确保不遗漏 */}}
-{{- $colSections := where (where site.Pages "Kind" "section") "Params.isCollection" true }}
-<div style="display:none" data-debug="colSections={{ len $colSections }} sitePages={{ len site.Pages }} sections={{ len .Sections }}"></div>
-
+{{- $pages := slice }}
 {{- if .IsHome }}
+{{- /* 首页：扁平化所有 mainSections 文章，跳过合集子文章，加入合集 section */}}
 {{- $rawPages := where site.RegularPages "Type" "in" site.Params.mainSections }}
 {{- $rawPages = where $rawPages "Params.hiddenInHomeList" "!=" "true" }}
-{{- /* 合集处理：子文章折叠为合集卡片，不单独显示 */}}
 {{- $.Scratch.Set "filtered" slice }}
 {{- range $rawPages }}
-  {{- if and .Parent (or (eq .Parent.Params.isCollection true) (eq .Parent.Params.layout "collection")) }}
-    {{- /* 跳过合集子文章 */}}
+  {{- if and .Parent (in $colPermalinks .Parent.RelPermalink) }}
+    {{- /* 跳过合集子文章：由合集卡片代为展示 */}}
   {{- else }}
     {{- $.Scratch.Add "filtered" (slice .) }}
   {{- end }}
 {{- end }}
 {{- $pages = union ($.Scratch.Get "filtered") $colSections }}
 {{- else }}
-{{- /* 非首页：确保合集 section 也在列表中 */}}
-{{- $pages = union $pages $colSections }}
+{{- /* 非首页：直属文章 + 当前页的直属合集子 section（从全局 colSections 里挑父级=当前页的） */}}
+{{- $.Scratch.Set "secs" slice }}
+{{- range $colSections }}
+  {{- if and .Parent (eq .Parent.RelPermalink $.RelPermalink) }}
+    {{- $.Scratch.Add "secs" (slice .) }}
+  {{- end }}
+{{- end }}
+{{- $pages = union .RegularPages ($.Scratch.Get "secs") }}
 {{- end }}
 
 {{/* === 置顶文章：从列表中抽出，单独渲染为置顶卡片 === */}}
@@ -69,8 +89,21 @@
 {{- $pages = where $pages "Params.pinned" "!=" true }}
 {{- end }}
 
+{{/* === 按有效日期降序排序：合集（section）取其最新文章日期，避免空 _index.md 导致排到末尾 === */}}
+{{- $.Scratch.Set "items" slice }}
+{{- range $p := $pages }}
+  {{- $d := $p.Date }}
+  {{- if eq $p.Kind "section" }}
+    {{- range $pp := $p.RegularPages }}{{- if gt $pp.Date $d }}{{- $d = $pp.Date }}{{- end }}{{- end }}
+  {{- end }}
+  {{- $.Scratch.Add "items" (dict "p" $p "d" $d) }}
+{{- end }}
+{{- $items := sort ($.Scratch.Get "items") "d" "desc" }}
+{{- $.Scratch.Set "sortedPages" (slice) }}
+{{- range $items }}{{- $.Scratch.Add "sortedPages" .p }}{{- end }}
+{{- $pages = where ($.Scratch.Get "sortedPages") "Kind" "ne" "__________" }}
+
 {{- $paginator := .Paginate $pages }}
-<div style="display:none" data-debug-pg="pages={{ len $pages }} colSec={{ len $colSections }} paginator={{ len $paginator.Pages }} totalPages={{ $paginator.TotalPages }}"></div>
 
 {{- if and .IsHome site.Params.homeInfoParams (eq $paginator.PageNumber 1) }}
 {{- partial "home_info.html" . }}
@@ -83,32 +116,33 @@
 
 {{- $term := .Data.Term }}
 {{- range $index, $page := $paginator.Pages }}
-{{- if eq $page.Kind "section" }}<div style="display:none" data-debug-sec="{{ $index }}: title={{ $page.Title }} isCol={{ $page.Params.isCollection }} layout={{ $page.Params.layout }} kind={{ $page.Kind }}"></div>{{ end }}
+{{- $isCollection := and (eq $page.Kind "section") (gt (len $page.RegularPages) 1) }}
 
-{{- if or (eq $page.Params.isCollection true) (eq $page.Params.layout "collection") }}
-{{- /* === 合集卡片：堆叠效果 === */}}
+{{- if $isCollection }}
+{{- /* === 合集卡片：堆叠效果，标题=文件夹名，徽章=篇数 === */}}
+{{- $colTitle := $page.Title }}
+{{- if not $colTitle }}{{- $colTitle = path.Base (trim $page.File.Dir "/") }}{{- end }}
 <article class="post-entry collection-entry">
   <span class="cache-dot" data-url="{{ $page.RelPermalink }}" aria-hidden="true"></span>
   <span class="collection-badge">
     <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
       <path d="M4 20h16a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.93a2 2 0 0 1-1.66-.9l-.82-1.2A2 2 0 0 0 7.93 3H4a2 2 0 0 0-2 2v13c0 1.1.9 2 2 2Z"/>
     </svg>
-    {{- $count := 0 -}}
-    {{- range $page.RegularPages -}}{{- $count = add $count 1 -}}{{- end -}}
-    {{ $count }}&nbsp;{{ if eq $page.Lang "en" }}articles{{ else }}篇{{ end }}
+    {{- len $page.RegularPages }}&nbsp;{{ if eq $page.Lang "en" }}articles{{ else }}篇{{ end }}
   </span>
   <header class="entry-header">
-    <h2 class="entry-hint-parent">{{ $page.Title }}</h2>
+    <h2 class="entry-hint-parent">{{ $colTitle }}</h2>
   </header>
   {{- if ne ($page.Param "hideSummary") true }}
   <div class="entry-content">
-    <p>{{ $page.Summary | plainify | htmlUnescape }}</p>
+    {{- with $page.Description }}<p>{{ . | plainify | htmlUnescape }}</p>{{- end }}
   </div>
   {{- end }}
   <footer class="entry-footer">
-    <span>{{ $page.Date | time.Format "2006年1月2日" }}</span>
+    {{- $sorted := sort $page.RegularPages "Date" "desc" }}
+    {{- with index $sorted 0 }}<span>{{ .Date | time.Format "2006年1月2日" }}</span>{{- end }}
   </footer>
-  <a class="entry-link" aria-label="collection link to {{ $page.Title | plainify }}" href="{{ $page.Permalink }}"></a>
+  <a class="entry-link" aria-label="collection link to {{ $colTitle | plainify }}" href="{{ $page.Permalink }}"></a>
 </article>
 {{- else }}
 

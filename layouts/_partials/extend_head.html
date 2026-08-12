@@ -229,12 +229,8 @@
   }
   .collection-entry .entry-header { padding-right: 64px; }
 
-  /* --- 合集选择页 --- */
-  .collection-page {
-    display: flex;
-    flex-direction: column;
-    gap: var(--gap);
-  }
+  /* 合集卡片无描述时留白处理 */
+  .collection-entry .entry-content:empty { display: none; }
 </style>
 
 {{- /* ========== 全站：SW 缓存红点（未缓存文章的卡片/列表项右上角显示红色小圆点） ========== */ -}}
