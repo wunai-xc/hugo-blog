@@ -892,66 +892,68 @@
 
 {{- end }}{{- /* .IsPage */ -}}
 
-{{- /* ========== 全站：SW 缓存红点的 JS 逻辑（首页 + 文章详情页都要执行） ========== */ -}}
+{{- /* ========== 全站：SW 缓存红点的 JS 逻辑（以 SW 为权威来源） ========== */ -}}
 <script>
 (function () {
-  var STORAGE_KEY = 'sw-cached-posts-v1';
+  var STORAGE_KEY = 'sw-cached-posts-v2'; // v1 是老的乐观键，升级后独立
 
-  // URL 规范化：去掉末尾 / 做统一比较（Hugo .RelPermalink 常以 / 结尾）
   function canonicalUrl(url) {
     if (!url) return '';
     return url.replace(/\/+$/, '') || '/';
   }
 
-  // 读取 localStorage，返回已缓存 URL 的 Set
-  function getCachedSet() {
+  // ========== localStorage：乐观缓存，SW 查询不到 / SW 未安装时的兜底 ==========
+  function getOptimisticSet() {
     var s = new Set();
     try {
       var raw = localStorage.getItem(STORAGE_KEY);
-      if (raw) {
-        var arr = JSON.parse(raw);
-        if (Array.isArray(arr)) {
-          for (var i = 0; i < arr.length; i++) s.add(canonicalUrl(arr[i]));
-        }
-      }
-    } catch (e) { /* localStorage 不可用，静默忽略 */ }
+      if (raw) { var arr = JSON.parse(raw); if (Array.isArray(arr)) arr.forEach(function (u){ s.add(canonicalUrl(u)); }); }
+    } catch (e) {}
     return s;
   }
-
-  // 写入 localStorage
-  function saveCachedSet(set) {
+  function addOptimistic(url) {
+    var cu = canonicalUrl(url); if (!cu) return;
     try {
-      var arr = [];
-      set.forEach(function (v) { arr.push(v); });
+      var s = getOptimisticSet();
+      if (s.has(cu)) return;
+      s.add(cu);
+      var arr = []; s.forEach(function (v){ arr.push(v); });
       localStorage.setItem(STORAGE_KEY, JSON.stringify(arr));
-    } catch (e) { /* 静默忽略 */ }
+    } catch (e) {}
   }
 
-  // 扫描所有 .cache-dot，根据缓存状态显示/隐藏红点
-  function refreshDots() {
-    var dots = document.querySelectorAll('.cache-dot[data-url]');
-    if (!dots.length) return;
-    var cached = getCachedSet();
-    dots.forEach(function (dot) {
-      var url = canonicalUrl(dot.getAttribute('data-url'));
-      if (!url) return;
-      if (cached.has(url)) {
-        dot.classList.remove('cache-dot--show');
+  // ========== SW 权威查询 ==========
+  // 收集当前所有 cache-dot 的 URL，批量向 SW 问权威答案
+  function collectDotUrls() {
+    var urls = [];
+    document.querySelectorAll('.cache-dot[data-url]').forEach(function (dot) {
+      var u = canonicalUrl(dot.getAttribute('data-url'));
+      if (u && urls.indexOf(u) === -1) urls.push(u);
+    });
+    return urls;
+  }
+
+  // 按 (SW 查询结果 + 乐观缓存) 的 OR 来决定红点显示/隐藏
+  function applyDots(authoritativeMap) {
+    var opt = getOptimisticSet();
+    document.querySelectorAll('.cache-dot[data-url]').forEach(function (dot) {
+      var u = canonicalUrl(dot.getAttribute('data-url')); if (!u) return;
+      var cached = false;
+      if (authoritativeMap) {
+        // 有权威结果，完全以权威为准
+        cached = !!authoritativeMap[u];
       } else {
-        dot.classList.add('cache-dot--show');
+        // 权威不可达 → 用乐观缓存兜底
+        cached = opt.has(u);
       }
+      dot.classList.toggle('cache-dot--show', !cached);
     });
   }
 
-  // 标记某 URL 为已缓存（并刷新所有对应红点）
-  function markCached(url) {
-    var cu = canonicalUrl(url);
-    if (!cu) return;
-    var set = getCachedSet();
-    if (set.has(cu)) return; // 已缓存，跳过
-    set.add(cu);
-    saveCachedSet(set);
-    // 刷新对应 URL 的所有红点
+  // 把某 URL 所有对应红点隐藏（SW 广播 PAGE_CACHED 时调用）
+  function hideDotsFor(url) {
+    var cu = canonicalUrl(url); if (!cu) return;
+    addOptimistic(cu);
     document.querySelectorAll('.cache-dot[data-url]').forEach(function (dot) {
       if (canonicalUrl(dot.getAttribute('data-url')) === cu) {
         dot.classList.remove('cache-dot--show');
@@ -959,10 +961,58 @@
     });
   }
 
-  // DOM 就绪后初始化
+  function hasServiceWorker() {
+    return 'serviceWorker' in navigator;
+  }
+
+  // 向 SW 批量查询缓存状态；SW 未就绪则 applyDots(null) 走乐观兜底
+  function checkWithSW() {
+    var urls = collectDotUrls();
+    if (!urls.length) return;
+    if (!hasServiceWorker() || !navigator.serviceWorker.controller) {
+      applyDots(null); // SW 未安装/未激活 → 乐观兜底
+      return;
+    }
+    try {
+      var mc = new MessageChannel();
+      var timeout = setTimeout(function () {
+        applyDots(null); // 2s 超时 → 乐观兜底
+      }, 2000);
+      mc.port1.onmessage = function (e) {
+        if (e.data && e.data.type === 'CHECK_CACHED_RESULT' && e.data.results) {
+          clearTimeout(timeout);
+          // 规范化结果 key
+          var norm = {};
+          Object.keys(e.data.results).forEach(function (k) {
+            norm[canonicalUrl(k)] = e.data.results[k];
+          });
+          applyDots(norm);
+        }
+      };
+      navigator.serviceWorker.controller.postMessage(
+        { type: 'CHECK_CACHED', urls: urls },
+        [mc.port2]
+      );
+    } catch (e) {
+      applyDots(null); // 发消息失败 → 乐观兜底
+    }
+  }
+
+  function refreshDots() {
+    checkWithSW();
+  }
+
+  // 标记已缓存：乐观写入 + 立即隐藏对应红点（同时也等下一次权威查询确认）
+  function markCached(url) {
+    if (!url) return;
+    addOptimistic(url);
+    hideDotsFor(url);
+  }
+
+  // ========== 事件 ==========
   function init() {
     refreshDots();
-    // 如果当前页是文章详情页，把当前页面 URL 标记为已缓存（SW 已缓存或即将缓存）
+    // 当前详情页：乐观标记（真正缓存由 SW 写入 + 广播 PAGE_CACHED 双重确认）
     if (document.querySelector('article.post-single')) {
       markCached(location.pathname);
     }
@@ -974,21 +1024,28 @@
     init();
   }
 
-  // 关键修复：从文章页"后退"回到首页时，很多浏览器走 bfcache（往返缓存），
-  // 不会重新触发 DOMContentLoaded，因此必须监听 pageshow 事件来刷新红点
-  window.addEventListener('pageshow', function (e) {
+  window.addEventListener('pageshow', function () {
     refreshDots();
-    // 如果是文章详情页且从 bfcache 恢复，再次确保已标记缓存
-    if (document.querySelector('article.post-single')) {
-      markCached(location.pathname);
-    }
+    if (document.querySelector('article.post-single')) markCached(location.pathname);
   });
 
-  // 额外保险：tab 从后台切回前台时也刷一次（用户在新标签打开文章后回到旧标签）
   document.addEventListener('visibilitychange', function () {
-    if (!document.hidden) {
-      refreshDots();
-    }
+    if (!document.hidden) refreshDots();
   });
+
+  // SW 广播 PAGE_CACHED → 立即隐藏对应 URL 的所有红点（最权威路径）
+  if (hasServiceWorker()) {
+    navigator.serviceWorker.addEventListener('message', function (e) {
+      if (e.data && e.data.type === 'PAGE_CACHED' && e.data.url) {
+        hideDotsFor(e.data.url);
+      }
+    });
+    // SW 更新后可能还没 claim controller，等待首次激活后再刷一次
+    if (navigator.serviceWorker.ready) {
+      navigator.serviceWorker.ready.then(function () {
+        setTimeout(function () { refreshDots(); }, 0);
+      }).catch(function () {});
+    }
+  }
 })();
 </script>

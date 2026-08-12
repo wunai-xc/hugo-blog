@@ -58,12 +58,44 @@ self.addEventListener('activate', (event) => {
   );
 });
 
-/* ------------------------- 消息：立即跳过等待激活 ------------------------ */
+/* ------------------------- 消息通道 ------------------------ */
 self.addEventListener('message', (event) => {
-  if (event.data && event.data.type === 'SKIP_WAITING') {
+  const data = event.data || {};
+  if (data.type === 'SKIP_WAITING') {
     self.skipWaiting();
+    return;
+  }
+  // 批量查询 URL 是否已写入页面缓存（权威来源：SW caches）
+  if (data.type === 'CHECK_CACHED' && Array.isArray(data.urls)) {
+    event.waitUntil(
+      (async () => {
+        const cache = await caches.open(PAGES_CACHE);
+        const results = {};
+        for (const raw of data.urls) {
+          try {
+            const u = new URL(raw, location.origin);
+            // 查命中：精确匹配 / 末尾/补 / 去掉 / 三种变体各试一次
+            let hit = await cache.match(u.toString());
+            if (!hit) hit = await cache.match(u.toString().replace(/\/?$/, '/'));
+            if (!hit) hit = await cache.match(u.toString().replace(/\/$/, ''));
+            results[raw] = !!hit;
+          } catch (e) { results[raw] = false; }
+        }
+        if (event.ports && event.ports[0]) {
+          event.ports[0].postMessage({ type: 'CHECK_CACHED_RESULT', results });
+        }
+      })()
+    );
   }
 });
+
+/** 页面缓存写入后广播：通知所有 client 刷新红点 */
+async function broadcastPageCached(url) {
+  const clients = await self.clients.matchAll({ type: 'window', includeUncontrolled: true });
+  clients.forEach((c) => {
+    try { c.postMessage({ type: 'PAGE_CACHED', url }); } catch (e) { /* client 可能已关闭 */ }
+  });
+}
 
 /* ------------------------------ 请求拦截 ------------------------------ */
 self.addEventListener('fetch', (event) => {
@@ -144,11 +176,17 @@ async function cacheFirst(request, cacheName) {
 async function staleWhileRevalidate(request, cacheName) {
   const cache = await caches.open(cacheName);
   const cached = await cache.match(request);
+  const isPagesCache = cacheName === PAGES_CACHE;
+  const reqUrl = request.url;
 
   // 后台异步拉取最新版本（不阻塞响应）
   const fetchPromise = fetch(request, { credentials: 'same-origin' })
-    .then((res) => {
-      if (res && res.ok) cache.put(request, res.clone());
+    .then(async (res) => {
+      if (res && res.ok) {
+        await cache.put(request, res.clone());
+        // 页面缓存写入成功后广播，让页面刷新红点（权威来源）
+        if (isPagesCache) try { broadcastPageCached(reqUrl); } catch (e) {}
+      }
       return res;
     })
     .catch(() => { /* 离线时静默失败 */ });
