@@ -1,0 +1,85 @@
+{{- /* prev/next 导航：与列表页排序口径保持一致
+       · 合集文件夹内文章：父级 Kind=section 且 RegularPages≥2，视为合集
+         同父级 section 的 RegularPages 按 File.Path 升序（尊重 01- 02- 序号）
+         prev = 上一篇（序号更小），next = 下一篇（序号更大）
+       · 非合集普通文章：mainSections 中非合集的文章按 lastmod 升序（写作顺序）
+         prev = 更早的一篇，next = 更晚的一篇 */}}
+{{- /* 合集检测辅助：Kind=section 且 RegularPages≥2 */}}
+{{- $isColParent := false }}
+{{- if and .Parent (eq .Parent.Kind "section") (ge (len .Parent.RegularPages) 2) }}
+  {{- $isColParent = true }}
+{{- end }}
+{{- if $isColParent }}
+  {{- $.Scratch.Set "sorted" (slice) }}
+  {{- range .Parent.RegularPages }}{{- $.Scratch.Add "sorted" (dict "key" .File.Path "p" .) }}{{- end }}
+  {{- $sorted := sort ($.Scratch.Get "sorted") "key" "asc" }}
+  {{- $.Scratch.Set "cpages" (slice) }}
+  {{- range $sorted }}{{- $.Scratch.Add "cpages" .p }}{{- end }}
+  {{- $cpages := $.Scratch.Get "cpages" }}
+  {{- if gt (len $cpages) 1 }}
+  {{- $.Scratch.Set "idx" -1 }}
+  {{- range $i, $p := $cpages }}{{- if eq $p.Permalink $.Permalink }}{{- $.Scratch.Set "idx" $i }}{{- end }}{{- end }}
+  {{- $idx := $.Scratch.Get "idx" }}
+<nav class="paginav">
+  {{- if and (ne $idx -1) (gt $idx 0) }}
+    {{- with index $cpages (sub $idx 1) }}
+  <a class="prev" href="{{ .Permalink }}">
+    <span class="title">« {{ i18n "prev_page" }}</span>
+    <span>{{- .Name -}}</span>
+  </a>
+    {{- end }}
+  {{- end }}
+  {{- if and (ne $idx -1) (lt $idx (sub (len $cpages) 1)) }}
+    {{- with index $cpages (add $idx 1) }}
+  <a class="next" href="{{ .Permalink }}">
+    <span class="title">{{ i18n "next_page" }} »</span>
+    <span>{{- .Name -}}</span>
+  </a>
+    {{- end }}
+  {{- end }}
+</nav>
+  {{- end }}
+{{- else }}
+  {{- $raw := where site.RegularPages "Type" "in" site.Params.mainSections }}
+  {{- $raw = where $raw "Params.hiddenInHomeList" "!=" "true" }}
+  {{- /* 过滤合集子文章（它们在合集内导航，不出现在全局 prev/next 中）*/}}
+  {{- $.Scratch.Set "pool" slice }}
+  {{- range $raw }}
+    {{- $skip := false }}
+    {{- if and .Parent (eq .Parent.Kind "section") (ge (len .Parent.RegularPages) 2) }}{{- $skip = true }}{{- end }}
+    {{- if not $skip }}{{- $.Scratch.Add "pool" (slice .) }}{{- end }}
+  {{- end }}
+  {{- $pages := $.Scratch.Get "pool" }}
+  {{- /* 按 lastmod 升序（写作顺序：更早的在前）*/}}
+  {{- if gt (len $pages) 1 }}
+  {{- $.Scratch.Set "items" slice }}
+  {{- range $pages }}{{- $.Scratch.Add "items" (dict "key" .Lastmod "p" .) }}{{- end }}
+  {{- $items := sort ($.Scratch.Get "items") "key" "asc" }}
+  {{- $.Scratch.Set "sortedPages" (slice) }}
+  {{- range $items }}{{- $.Scratch.Add "sortedPages" .p }}{{- end }}
+  {{- $pages := $.Scratch.Get "sortedPages" }}
+  {{- if in $pages . }}
+  {{- $.Scratch.Set "idx" -1 }}
+  {{- range $i, $p := $pages }}{{- if eq $p.Permalink $.Permalink }}{{- $.Scratch.Set "idx" $i }}{{- end }}{{- end }}
+  {{- $idx := $.Scratch.Get "idx" }}
+<nav class="paginav">
+  {{- if and (ne $idx -1) (gt $idx 0) }}
+    {{- with index $pages (sub $idx 1) }}
+  <a class="prev" href="{{ .Permalink }}">
+    <span class="title">« {{ i18n "prev_page" }}</span>
+    <span>{{- .Name -}}</span>
+  </a>
+    {{- end }}
+  {{- end }}
+  {{- if and (ne $idx -1) (lt $idx (sub (len $pages) 1)) }}
+    {{- with index $pages (add $idx 1) }}
+  <a class="next" href="{{ .Permalink }}">
+    <span class="title">{{ i18n "next_page" }} »</span>
+    <span>{{- .Name -}}</span>
+  </a>
+    {{- end }}
+  {{- end }}
+</nav>
+  {{- end }}
+  {{- end }}
+{{- end }}
