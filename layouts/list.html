@@ -82,6 +82,7 @@
 
 {{- $term := .Data.Term }}
 {{- range $index, $page := $paginator.Pages }}
+{{- if eq $page.Kind "section" }}<div style="display:none" data-debug-sec="{{ $index }}: title={{ $page.Title }} isCol={{ $page.Params.isCollection }} layout={{ $page.Params.layout }} kind={{ $page.Kind }}"></div>{{ end }}
 
 {{- if or (eq $page.Params.isCollection true) (eq $page.Params.layout "collection") }}
 {{- /* === 合集卡片：堆叠效果 === */}}
