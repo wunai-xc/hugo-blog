@@ -75,7 +75,11 @@ jobs:
           ls -lh static/images/cell/
 
       - name: Build
-        run: hugo --gc --minify
+        run: |
+          # 中文文件名需要关闭 quotepath，否则 Hugo 的 GitInfo 拿不到 git log 时间，
+          # 导致 lastmod 回退为 date，同 date 文章排序不稳定
+          git config core.quotepath false
+          hugo --gc --minify
 
       - name: Deploy to Cloudflare Pages
         uses: cloudflare/wrangler-action@v3

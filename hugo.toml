@@ -9,12 +9,18 @@ enableEmoji = true
 buildDrafts = false
 buildFuture = false
 pygmentsUseClasses = true
+enableGitInfo = true
 
 # 分页与摘要
 summaryLength = 30
 
 [pagination]
   pagerSize = 10
+
+# lastmod 来源优先级：git 最后提交时间 > front matter lastmod 字段 > date
+# 让同 date 的批量文章也能按实际修改时间精确排序（秒级精度，基本不撞）
+[frontmatter]
+  lastmod = [":git", "lastmod", "date"]
 
 [markup.goldmark.renderer]
   # 为允许作者写 raw HTML（HTML 块 / 行级 HTML），unsafe = true 是必须的。

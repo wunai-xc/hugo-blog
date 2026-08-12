@@ -89,19 +89,42 @@
 {{- $pages = where $pages "Params.pinned" "!=" true }}
 {{- end }}
 
-{{/* === 按有效日期降序排序：合集（section）取其最新文章日期，避免空 _index.md 导致排到末尾 === */}}
+{{/* === 排序逻辑 ===
+     - 合集 section 页（点进文件夹看文章）：按文件名升序，尊重 01- 02- 序号前缀
+     - 首页/列表页：非AI作者在前，AI在后；各自按 lastmod 降序（最近改动在上）
+       合集卡片的 lastmod 取其内部最新文章的 lastmod；合集卡片本身无 author，归非AI组 */}}
+{{- $isCollectionPage := and (eq .Kind "section") (in $colPermalinks .RelPermalink) }}
+{{- if $isCollectionPage }}
+{{- $.Scratch.Set "byname" slice }}
+{{- range .RegularPages }}{{- $.Scratch.Add "byname" (dict "link" .File.Path "p" .) }}{{- end }}
+{{- $byname := sort ($.Scratch.Get "byname") "link" "asc" }}
+{{- $.Scratch.Set "cpages" (slice) }}
+{{- range $byname }}{{- $.Scratch.Add "cpages" .p }}{{- end }}
+{{- $pages = where ($.Scratch.Get "cpages") "Kind" "ne" "__________" }}
+{{- else }}
 {{- $.Scratch.Set "items" slice }}
 {{- range $p := $pages }}
-  {{- $d := $p.Date }}
+  {{- $lm := $p.Lastmod }}
   {{- if eq $p.Kind "section" }}
-    {{- range $pp := $p.RegularPages }}{{- if gt $pp.Date $d }}{{- $d = $pp.Date }}{{- end }}{{- end }}
+    {{- range $pp := $p.RegularPages }}{{- if gt $pp.Lastmod $lm }}{{- $lm = $pp.Lastmod }}{{- end }}{{- end }}
   {{- end }}
-  {{- $.Scratch.Add "items" (dict "p" $p "d" $d) }}
+  {{- $isAI := false }}
+  {{- with $p.Params.author }}{{- if eq (lower (printf "%s" .)) "ai" }}{{- $isAI = true }}{{- end }}{{- end }}
+  {{- $.Scratch.Add "items" (dict "p" $p "lm" $lm "isAI" $isAI) }}
 {{- end }}
-{{- $items := sort ($.Scratch.Get "items") "d" "desc" }}
+{{- $.Scratch.Set "nonAI" slice }}
+{{- $.Scratch.Set "aiGrp" slice }}
+{{- $items := $.Scratch.Get "items" }}
+{{- range $items }}
+  {{- if .isAI }}{{- $.Scratch.Add "aiGrp" . }}{{- else }}{{- $.Scratch.Add "nonAI" . }}{{- end }}
+{{- end }}
+{{- $nonAI := sort ($.Scratch.Get "nonAI") "lm" "desc" }}
+{{- $aiGrp := sort ($.Scratch.Get "aiGrp") "lm" "desc" }}
 {{- $.Scratch.Set "sortedPages" (slice) }}
-{{- range $items }}{{- $.Scratch.Add "sortedPages" .p }}{{- end }}
+{{- range $nonAI }}{{- $.Scratch.Add "sortedPages" .p }}{{- end }}
+{{- range $aiGrp }}{{- $.Scratch.Add "sortedPages" .p }}{{- end }}
 {{- $pages = where ($.Scratch.Get "sortedPages") "Kind" "ne" "__________" }}
+{{- end }}
 
 {{- $paginator := .Paginate $pages }}
 
