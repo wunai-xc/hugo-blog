@@ -70,6 +70,7 @@
 {{- end }}
 
 {{- $paginator := .Paginate $pages }}
+<div style="display:none" data-debug-pg="pages={{ len $pages }} colSec={{ len $colSections }} paginator={{ len $paginator.Pages }} totalPages={{ $paginator.TotalPages }}"></div>
 
 {{- if and .IsHome site.Params.homeInfoParams (eq $paginator.PageNumber 1) }}
 {{- partial "home_info.html" . }}
