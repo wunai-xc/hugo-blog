@@ -4,6 +4,7 @@ defaultContentLanguage = "zh"
 defaultContentLanguageInSubdir = true
 title = "wunai's blog"
 theme = "PaperMod"
+timezone = "Asia/Shanghai"
 enableRobotsTXT = true
 enableEmoji = true
 buildDrafts = false
