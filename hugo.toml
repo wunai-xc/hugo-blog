@@ -169,12 +169,6 @@ summaryLength = 30
       weight = 50
 
     [[languages.zh.menu.main]]
-      identifier = "status"
-      name = "状态"
-      url = "/zh/status/"
-      weight = 55
-
-    [[languages.zh.menu.main]]
       identifier = "dcmc"
       name = "DMCC"
       url = "https://dmcc.wunai.top/"
@@ -223,12 +217,6 @@ summaryLength = 30
       name = "Archives"
       url = "/en/archives/"
       weight = 50
-
-    [[languages.en.menu.main]]
-      identifier = "status"
-      name = "Status"
-      url = "/en/status/"
-      weight = 55
 
     [[languages.en.menu.main]]
       identifier = "dcmc"
