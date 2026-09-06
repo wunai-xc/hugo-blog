@@ -116,6 +116,11 @@ jobs:
           curl -s \
             "https://api.cloudflare.com/client/v4/accounts/${CLOUDFLARE_ACCOUNT_ID}/pages/projects/hugo-blog-wunai/domains" \
             -H "Authorization: Bearer ${CLOUDFLARE_API_TOKEN}" || true
+          echo ""
+          echo "--- DNS records for blog.wunai.top ---"
+          curl -s \
+            "https://api.cloudflare.com/client/v4/zones/924bc0a3689b1e8c30df12448f9eefa4/dns_records?name=blog.wunai.top" \
+            -H "Authorization: Bearer ${CLOUDFLARE_API_TOKEN}" || true
 
       - name: Deploy to Cloudflare Pages
         uses: cloudflare/wrangler-action@v3
