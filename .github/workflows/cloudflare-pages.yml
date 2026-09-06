@@ -97,6 +97,10 @@ jobs:
           npx wrangler pages project create hugo-blog-wunai \
             --production-branch main \
             --compatibility-date 2025-01-01 2>/dev/null || true
+          # 重建项目后自定义域名会丢失，重新绑定 blog.wunai.top
+          # 已绑定则报错忽略，不阻塞部署
+          npx wrangler pages domain add \
+            --project-name hugo-blog-wunai blog.wunai.top 2>/dev/null || true
 
       - name: Deploy to Cloudflare Pages
         uses: cloudflare/wrangler-action@v3
