@@ -88,6 +88,16 @@ jobs:
           git config --global log.date local
           hugo --gc --minify
 
+      - name: Ensure Cloudflare Pages project exists
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+        run: |
+          # 项目被误删时自动重建；已存在则跳过（不阻塞部署）
+          npx wrangler pages project create hugo-blog-wunai \
+            --production-branch main \
+            --compatibility-date 2025-01-01 2>/dev/null || true
+
       - name: Deploy to Cloudflare Pages
         uses: cloudflare/wrangler-action@v3
         with:
