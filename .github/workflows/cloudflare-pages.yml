@@ -103,24 +103,14 @@ jobs:
             "https://api.cloudflare.com/client/v4/accounts/${CLOUDFLARE_ACCOUNT_ID}/pages/projects/hugo-blog-wunai/domains" \
             -H "Authorization: Bearer ${CLOUDFLARE_API_TOKEN}" \
             -H "Content-Type: application/json" \
-            -d '{"name":"blog.wunai.top"}' || true
+            -d '{"name":"blog.wunai.top"}' >/dev/null 2>&1 || true
           # 显式创建 CNAME 记录，确保 blog.wunai.top -> hugo-blog-wunai.pages.dev
           # zone_id 取自 Cloudflare，非敏感信息；已存在则报错忽略
           curl -s -X POST \
             "https://api.cloudflare.com/client/v4/zones/924bc0a3689b1e8c30df12448f9eefa4/dns_records" \
             -H "Authorization: Bearer ${CLOUDFLARE_API_TOKEN}" \
             -H "Content-Type: application/json" \
-            -d '{"type":"CNAME","name":"blog","content":"hugo-blog-wunai.pages.dev","proxied":true}' || true
-          # 打印当前域名状态用于排查
-          echo "--- Current Pages project domains ---"
-          curl -s \
-            "https://api.cloudflare.com/client/v4/accounts/${CLOUDFLARE_ACCOUNT_ID}/pages/projects/hugo-blog-wunai/domains" \
-            -H "Authorization: Bearer ${CLOUDFLARE_API_TOKEN}" || true
-          echo ""
-          echo "--- DNS records for blog.wunai.top ---"
-          curl -s \
-            "https://api.cloudflare.com/client/v4/zones/924bc0a3689b1e8c30df12448f9eefa4/dns_records?name=blog.wunai.top" \
-            -H "Authorization: Bearer ${CLOUDFLARE_API_TOKEN}" || true
+            -d '{"type":"CNAME","name":"blog","content":"hugo-blog-wunai.pages.dev","proxied":true}' >/dev/null 2>&1 || true
 
       - name: Deploy to Cloudflare Pages
         uses: cloudflare/wrangler-action@v3
